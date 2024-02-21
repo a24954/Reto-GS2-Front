@@ -5,15 +5,15 @@
             <label for="check" class="checkbtn">
                 <i class="fa-solid fa-bars"></i>
             </label>
-            <a href="index.html" class="enlace"><img src="../../Imagenes/Logo.png" alt="" class="logo"></a>
+            <a class="enlace"><img src="../../Imagenes/Logo.png" alt="" class="logo"></a>
             <ul>
                 <li><router-link to="/">INICIO</router-link></li>
                 <li><router-link to="/Obras">OBRAS</router-link></li>
                 <li>
-                    <a href="localizacion.html">LOCALIZACION</a>
+                    <a href="reservar.html">RESERVA</a>
                 </li>
                 <li>
-                    <a href="reservar.html">RESERVA</a>
+                    <a href="reservar.html">PERFI</a>
                 </li>
             </ul>
         </nav>
@@ -25,7 +25,7 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-    name: 'Navbar'
+    name: 'Navbar',
 });
 </script>
 

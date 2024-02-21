@@ -13,7 +13,7 @@
                     <a href="reservar.html">RESERVA</a>
                 </li>
                 <li>
-                    <a href="reservar.html">PERFI</a>
+                    <a href="reservar.html">PERFIL</a>
                 </li>
             </ul>
         </nav>

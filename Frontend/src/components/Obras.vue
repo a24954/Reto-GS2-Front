@@ -1,31 +1,28 @@
 <template>
     <!-- Tu plantilla aquí -->
 </template>
-  
-<script lang="ts">
-import Vue from 'vue';
-import { ObrasService } from '../services/ObrasService'; // Asegúrate de que la ruta de importación sea correcta
 
-export default Vue.extend({
-    data() {
-        return {
-            obras: [],
-            error: null,
-        };
-    },
-    methods: {
-        async loadObras() {
+<script lang="ts">
+import { defineComponent, ref, onMounted } from 'vue';
+import { ObrasService } from '../services/ObrasService';
+import type { Obra } from '../services/ObrasService';
+
+export default defineComponent({
+    name: 'Obras',
+    setup() {
+        const obras = ref<Obra[]>([]);
+        const error = ref<string | null>(null);
+        const loadObras = async () => {
             try {
-                this.obras = await ObrasService.getObras();
-            } catch (error) {
-                this.error = error.message;
+                obras.value = await ObrasService.getObras();
+            } catch (e) {
+                const err = e as Error;
+                error.value = err.message;
             }
-        },
-        // Puedes agregar aquí los métodos para crear, actualizar y eliminar obras
-    },
-    created() {
-        this.loadObras();
-    },
+        };
+        onMounted(loadObras);
+        return { obras, error };
+    }
 });
 </script>
 

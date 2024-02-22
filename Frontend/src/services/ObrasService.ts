@@ -2,7 +2,8 @@ export interface Obra {
     id: number;
     nombre: string;
     precio: number;
-    // Agrega otros campos necesarios
+    Descripcion: string;
+    Reserva: Date;
 }
 
 const BASE_URL = 'https://tuapi.net/obras'; // Reemplaza con la URL base de tu API

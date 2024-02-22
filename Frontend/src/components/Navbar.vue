@@ -9,9 +9,7 @@
             <ul>
                 <li><router-link to="/">INICIO</router-link></li>
                 <li><router-link to="/Obras">OBRAS</router-link></li>
-                <li>
-                    <a href="reservar.html">RESERVA</a>
-                </li>
+                <li><router-link to="/Reservas">RESERVAS</router-link></li>
                 <li>
                     <a href="reservar.html">PERFIL</a>
                 </li>

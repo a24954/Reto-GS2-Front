@@ -1,12 +1,12 @@
 export interface Obra {
     id: number;
-    nombre: string;
-    precio: number;
+    Nombre: string;
+    Precio: number;
     Descripcion: string;
     Reserva: Date;
 }
 
-const BASE_URL = 'https://tuapi.net/obras'; // Reemplaza con la URL base de tu API
+const BASE_URL = 'http://localhost:5224/Obra'; // Reemplaza con la URL base de tu API
 
 export const ObrasService = {
     async getObras(): Promise<Obra[]> {

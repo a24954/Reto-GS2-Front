@@ -58,7 +58,6 @@
         </div>
     </div>
 </template>
-  
 
 <script lang="ts">
 import { ref, onMounted, Ref } from 'vue';

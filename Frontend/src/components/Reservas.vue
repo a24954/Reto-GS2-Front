@@ -60,50 +60,113 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, Ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import type { Ref } from 'vue';
 
-
-// Define la interfaz para una obra
 interface Obra {
     id: number;
     nombre: string;
     precio: number;
     descripcion: string;
-    reserva: string; // Usar string si la fecha viene en formato de texto
+    reserva: string;
 }
 
 export default {
     name: 'Reservas',
     setup() {
-        // Inicializa las obras como un array vacío y asigna el tipo Obra[]
         const obras: Ref<Obra[]> = ref([]);
-        // Usa null para la obra seleccionada inicialmente y proporciona un tipo
         const selectedObraId: Ref<number | null> = ref(null);
-        // Para el alerta de compra, puedes usar una ref booleana
         const purchaseAlert: Ref<boolean> = ref(false);
+        const rows: Ref<Array<Array<{ index: number, selected: boolean, occupied: boolean }>>> = ref([]);
+        const selectedSeatsCount: Ref<number> = ref(0);
+        const selectedObraName: Ref<string> = ref('');
+        const totalPrice: Ref<number> = ref(0);
+        const showEmailPopup: Ref<boolean> = ref(false);
+        const userEmail: Ref<string> = ref('');
 
-        // Función para cargar las obras
+        const isSelectedSeat = (rowIndex: number, seatIndex: number): boolean => {
+            return rows.value[rowIndex][seatIndex].selected;
+        };
+
+        const isOccupiedSeat = (rowIndex: number, seatIndex: number): boolean => {
+            return rows.value[rowIndex][seatIndex].occupied;
+        };
+
+        const toggleSeatSelection = (rowIndex: number, seatIndex: number) => {
+            if (!rows.value[rowIndex][seatIndex].occupied) {
+                rows.value[rowIndex][seatIndex].selected = !rows.value[rowIndex][seatIndex].selected;
+                selectedSeatsCount.value = rows.value.flat().filter(seat => seat.selected).length;
+                // Actualizar el nombre y el precio total según la obra seleccionada
+                const selectedObra = obras.value.find(obra => obra.id === selectedObraId.value);
+                if (selectedObra) {
+                    selectedObraName.value = selectedObra.nombre;
+                    totalPrice.value = selectedObra.precio * selectedSeatsCount.value;
+                }
+            }
+        };
+
+        const handleBuyButtonClick = () => {
+            // Simula la compra de asientos
+            rows.value.forEach(row => row.forEach(seat => {
+                if (seat.selected) seat.occupied = true; // Marcar los asientos seleccionados como ocupados
+            }));
+            purchaseAlert.value = true; // Mostrar alerta de compra exitosa
+            selectedSeatsCount.value = 0; // Resetear el contador de asientos seleccionados
+            totalPrice.value = 0; // Resetear el precio total
+            showEmailPopup.value = true; // Mostrar popup para enviar email
+        };
+
+        const handleResetButtonClick = () => {
+            // Resetear la selección de asientos
+            rows.value.forEach(row => row.forEach(seat => seat.selected = false));
+            selectedSeatsCount.value = 0; // Resetear el contador de asientos seleccionados
+            totalPrice.value = 0; // Resetear el precio total
+            purchaseAlert.value = false; // Ocultar alerta de compra
+        };
+
+        const closeEmailPopup = () => {
+            showEmailPopup.value = false;
+        };
+
+        const submitEmail = () => {
+            // Aquí debes añadir la lógica para enviar el email, este es un placeholder
+            console.log(`Enviando email a ${userEmail.value}`);
+            showEmailPopup.value = false; // Cierra el popup después de enviar
+        };
+
         onMounted(async () => {
             try {
                 const response = await fetch('http://localhost:3000/obras');
-                // Asegúrate de que la respuesta es del tipo esperado
-                obras.value = (await response.json()) as Obra[];
+                obras.value = await response.json();
+                // Inicializa los asientos de ejemplo
+                rows.value = Array(5).fill(0).map(() => Array(8).fill(0).map(() => ({ index: 0, selected: false, occupied: false })));
             } catch (error) {
                 console.error('Hubo un error al cargar las obras:', error);
             }
         });
 
-        // Aquí puedes agregar funciones y métodos para manejar selecciones y compras
-
-        // Asegúrate de retornar todas las variables y métodos que necesitará tu plantilla
         return {
             obras,
             selectedObraId,
             purchaseAlert,
+            rows,
+            isSelectedSeat,
+            isOccupiedSeat,
+            toggleSeatSelection,
+            selectedSeatsCount,
+            selectedObraName,
+            totalPrice,
+            showEmailPopup,
+            userEmail,
+            handleBuyButtonClick,
+            handleResetButtonClick,
+            closeEmailPopup,
+            submitEmail,
         };
     },
 };
 </script>
+
 
 <style scoped>
 /* Tus estilos aquí */

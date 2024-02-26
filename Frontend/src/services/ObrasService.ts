@@ -1,9 +1,9 @@
 export interface Obra {
-    id: number;
-    Nombre: string;
-    Precio: number;
-    Descripcion: string;
-    Reserva: Date;
+    idPlay: number;
+    name: string;
+    price: number;
+    description: string;
+    photo: string;
 }
 
 const BASE_URL = 'http://localhost:5224/Obra'; // Reemplaza con la URL base de tu API
@@ -40,7 +40,7 @@ export const ObrasService = {
     },
 
     async updateObra(obra: Obra): Promise<void> {
-        const response = await fetch(`${BASE_URL}/${obra.id}`, {
+        const response = await fetch(`${BASE_URL}/${obra.idPlay}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

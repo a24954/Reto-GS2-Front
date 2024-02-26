@@ -6,11 +6,10 @@
         </div>
         <div v-else>
             <ul>
-                <li v-for="obra in obras" :key="obra.id">
-                    <h3>{{ obra.Nombre }} - ${{ obra.Precio }}</h3>
-                    <p>{{ obra.Descripcion }}</p>
-                    <p>Reserva: {{ obra.Reserva }}</p>
-                    <p>Precio: {{ obra.Precio }}</p>
+                <li v-for="obra in obras" :key="obra.idPlay">
+                    <img :src="obra.photo" alt="Foto de la obra" class="obra-photo"/>
+                    <h3>{{ obra.name }} - ${{ obra.price }}</h3>
+                    <p>{{ obra.description }}</p>
                 </li>
             </ul>
         </div>

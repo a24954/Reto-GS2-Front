@@ -1,5 +1,8 @@
 <template>
     <div>
+        <Navbar />
+    </div>
+    <div>
         <h1 class="ejemplo">Hola, esto es la página de Obras</h1>
         <div v-if="error">
             Error cargando las obras: {{ error }}
@@ -14,15 +17,24 @@
             </ul>
         </div>
     </div>
+    <div>
+        <Footera />
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import { ObrasService } from '../services/ObrasService';
 import type { Obra } from '../services/ObrasService';
+import Navbar from '../components/Navbar.vue';
+import Footera from '../components/Footer.vue';
 
 export default defineComponent({
     name: 'ObrasView',
+    components: {
+    Navbar,
+    Footera,
+    },
     setup() {
         const obras = ref<Obra[]>([]);
         const error = ref<string | null>(null);

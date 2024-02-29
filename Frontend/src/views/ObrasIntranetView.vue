@@ -1,19 +1,20 @@
 <template>
     <div style="display: flex;">
         <LeftMenu />
-        <DashboardPanel />
+        <DashboardPanelObras />
     </div>
 </template>
 
 <script lang="ts">
 import LeftMenu from '../components/LeftMenu.vue';
-import DashboardPanel from '../components/DashboardPanel.vue'
+import DashboardPanelObras from '../components/DashboardPanelObras.vue'
+
 
 export default {
-    name: 'IntranetView',
+    name: 'ObrasIntranetView',
     components: {
         LeftMenu,
-        DashboardPanel
+        DashboardPanelObras
     }
 };
 </script>

@@ -26,7 +26,7 @@
 
 <script lang="ts">
 
-import { defineComponent, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { ObrasService } from '../services/ObrasService'; // Asegúrate de que la ruta sea correcta
 import type { Obra } from '../services/ObrasService'; // Uso correcto de type import
 
@@ -49,31 +49,32 @@ export default {
 
         const crearObra = async () => {
             try {
+                console.log("Creando obra: ", nuevaObra.value);
                 const obraCreada = await ObrasService.createObra(nuevaObra.value);
-                obras.value.push(obraCreada); // Agrega la nueva obra a la lista
-                nuevaObra.value = { idPlay: 0, name: '', price: 0, description: '', photo: '' }; // Resetea el formulario
+                obras.value.push(obraCreada);
+                nuevaObra.value = { idPlay: 0, name: '', price: 0, description: '', photo: '' };
             } catch (error) {
                 console.error(error);
             }
         };
 
         const eliminarObra = async (id: number) => {
-            try {
-                await ObrasService.deleteObra(id);
-                obras.value = obras.value.filter(obra => obra.idPlay !== id); // Elimina la obra de la lista
-            } catch (error) {
-                console.error(error);
-            }
-        };
+        try {
+            await ObrasService.deleteObra(id);
+            obras.value = obras.value.filter(obra => obra.idPlay !== id); // Elimina la obra de la lista
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-        return {
-            obras,
-            nuevaObra,
-            cargarObras,
-            crearObra,
-            eliminarObra,
-        };
-    },
+    return {
+        obras,
+        nuevaObra,
+        cargarObras,
+        crearObra,
+        eliminarObra,
+    };
+},
 };
 
 </script>
@@ -82,37 +83,51 @@ export default {
 
 <style scoped>
 :root {
-    --color-1: #2D2D34; /* Oscuro */
-    --color-2: #4E9F3D; /* Verde vibrante */
-    --color-3: #D8E9A8; /* Verde claro */
-    --color-4: #555555; /* Gris medio */
-    --color5: #FFFFFF; /* Blanco */
+    --color-1: #2D2D34;
+    /* Oscuro */
+    --color-2: #4E9F3D;
+    /* Verde vibrante */
+    --color-3: #D8E9A8;
+    /* Verde claro */
+    --color-4: #555555;
+    /* Gris medio */
+    --color5: #FFFFFF;
+    /* Blanco */
 }
 
 * {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif; /* Asegura consistencia de la fuente */
+    font-family: 'Poppins', sans-serif;
+    /* Asegura consistencia de la fuente */
 }
 
 body {
-    overflow: auto; /* Permite el desplazamiento si es necesario */
-    background-color: burlywood; /* Nuevo color de fondo */
+    overflow: auto;
+    /* Permite el desplazamiento si es necesario */
+    background-color: burlywood;
+    /* Nuevo color de fondo */
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Asegura que el body ocupe toda la altura de la pantalla */
+    min-height: 100vh;
+    /* Asegura que el body ocupe toda la altura de la pantalla */
 }
 
-.fa-bag-shopping:before, .fa-shopping-bag:before {
+.fa-bag-shopping:before,
+.fa-shopping-bag:before {
     content: none;
 }
+
 .ds-panel {
     text-align: center;
-    width: 100%; /* Ahora ocupa todo el ancho */
-    max-width: 960px; /* Limita el ancho máximo para que no se vea demasiado ancho en pantallas grandes */
-    margin: auto; /* Centra el panel si no ocupa todo el ancho */
+    width: 100%;
+    /* Ahora ocupa todo el ancho */
+    max-width: 960px;
+    /* Limita el ancho máximo para que no se vea demasiado ancho en pantallas grandes */
+    margin: auto;
+    /* Centra el panel si no ocupa todo el ancho */
     padding: 20px;
     background-color: burlywood;
     border-radius: 8px;
@@ -126,16 +141,20 @@ body {
 
 form {
     display: flex;
-    flex-direction: column; /* Cambia la dirección de los elementos del formulario */
+    flex-direction: column;
+    /* Cambia la dirección de los elementos del formulario */
     gap: 20px;
     margin-bottom: 20px;
 }
 
-input, textarea, button {
+input,
+textarea,
+button {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid var(--color-4);
-    width: 100%; /* Asegura que los elementos del formulario ocupen todo el ancho */
+    width: 100%;
+    /* Asegura que los elementos del formulario ocupen todo el ancho */
 }
 
 button {
@@ -160,9 +179,10 @@ button:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.obra-item h3, .obra-item p {
-    text-align: left; /* Alinea el texto a la izquierda */
+.obra-item h3,
+.obra-item p {
+    text-align: left;
+    /* Alinea el texto a la izquierda */
 }
 
-/* Puedes ajustar o eliminar el resto del CSS que no afecte a la vista actual */
-</style>
+/* Puedes ajustar o eliminar el resto del CSS que no afecte a la vista actual */</style>

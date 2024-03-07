@@ -2,7 +2,7 @@
     <div>
         <Navbar />
         <div class="obras-container">
-            <h1 class="ejemplo">Hola, esto es la página de Obras</h1>
+            <h1 class="ejemplo">OBRAS</h1>
             <div v-if="error" class="error-message">
                 Error cargando las obras: {{ error }}
             </div>
@@ -12,11 +12,12 @@
                     <div class="obra-info">
                         <h3>{{ obra.name }} - ${{ obra.price }}</h3>
                         <p>{{ obra.description }}</p>
+                        <button class="details-button">Ver detalles</button>
                     </div>
                 </div>
             </div>
         </div>
-        <Footera />
+            <Footera />
     </div>
 </template>
 
@@ -54,45 +55,77 @@ export default defineComponent({
 </script>
 
 <style scoped>
+
+.ejemplo{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    border: 3px solid black;
+    background-color: #C09057;
+}
+
 .obras-container {
-    max-width: 1200px; /* Ancho máximo del contenedor */
-    margin: 0 auto; /* Centra el contenedor */
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
 }
 
 .error-message {
-    color: red; /* Colorea el mensaje de error */
+    color: red; 
 }
 
 .obras-grid {
-    display: flex;  
+    display: flex;
     flex-wrap: wrap;
-    gap: 20px; /* Espacio entre las obras */
-    justify-content: center; /* Centra las obras horizontalmente */
+    gap: 20px;
+    justify-content: center;
 }
 
 .obra {
-    flex: 0 1 calc(50% - 20px); /* Ajusta las obras para que ocupen la mitad del espacio menos el hueco */
+    flex: 0 1 calc(50% - 20px); 
     display: flex;
-    flex-direction: column; /* Alinea verticalmente los elementos de cada obra */
-    align-items: center; /* Centra los elementos de cada obra horizontalmente */
-    background: #C09057; /* Fondo para cada obra */
-    border-radius: 8px; /* Bordes redondeados para las tarjetas */
-    overflow: hidden; /* Asegura que todo dentro de la tarjeta esté contenido */
+    flex-direction: column; 
+    align-items: center; 
+    background: #C09057;
+    border-radius: 8px; 
+    overflow: hidden; 
+    border: 3px solid black;
 }
 
 .obra-photo {
-    max-width: 100%; /* Asegura que la foto no sobrepase el ancho de la tarjeta */
-    height: auto; /* Mantiene la proporción de la imagen */
+    max-width: 100%; 
+    height: auto; 
+    margin-top: 3%;
 }
 
 .obra-info {
-    padding: 15px; /* Espacio dentro de cada tarjeta de obra */
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+.details-button {
+    margin-top: 10px;
+    padding: 10px 20px; 
+    background-color: #6F1D1D; 
+    color: white; 
+    border: none;
+    cursor: pointer;
+    border-radius: 5px; 
+    font-size: 16px; 
+    margin-bottom: 5%;
+}
+
+.details-button:hover {
+    background-color: #B8860B; 
 }
 
 @media (max-width: 768px) {
     .obra {
-        flex: 0 1 100%; /* En pantallas pequeñas, cada obra toma el ancho completo */
+        flex: 0 1 100%; 
     }
 }
 </style>

@@ -1,17 +1,15 @@
 <template>
     <div>
-        <div class="alert" v-if="purchaseAlert">
+        <div class="alert" id="purchaseAlert" style="display:none;">
             ¡Compra realizada con éxito!
         </div>
         <div class="obras-container">
             <label>Obras del TEATRO:</label>
-            <select v-model="selectedObraId">
-                <option v-for="obra in obras" :key="obra.id" :value="obra.id">
-                    {{ obra.nombre }} (${{ obra.precio }})
+            <select id="obras" v-model="selectedObra">
+                <option v-for="obra in obras" :key="obra.nombre" :value="obra">{{ obra.nombre }} (${{ obra.precio }})
                 </option>
             </select>
         </div>
-
         <ul class="showcase">
             <li>
                 <div class="seat"></div>
@@ -26,33 +24,29 @@
                 <small>Ocupado</small>
             </li>
         </ul>
-
         <div class="container">
             <div class="row" v-for="(row, rowIndex) in rows" :key="`row-${rowIndex}`">
-                <div class="seat"
-                    :class="{ 'selected': isSelectedSeat(rowIndex, seatIndex), 'occupied': isOccupiedSeat(rowIndex, seatIndex) }"
-                    v-for="seatIndex in row" :key="`seat-${rowIndex}-${seatIndex}`"
-                    @click="toggleSeatSelection(rowIndex, seatIndex)"></div>
+                <div v-for="(seatStatus, seatIndex) in row" :key="`seat-${rowIndex}-${seatIndex}`"
+                    :class="['seat', { selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }]"
+                    @click="toggleSeat(rowIndex, seatIndex)">
+                </div>
             </div>
         </div>
-
         <p class="text">
-            Has seleccionado <span>{{ selectedSeatsCount }}</span> asientos para la obra
-            <span>{{ selectedObraName }}</span> por el precio de $<span>{{ totalPrice }}</span>.
+            Has seleccionado <span id="count">{{ selectedSeats.length }}</span> asientos para la obra <span
+                id="selectedObraName">{{ selectedObraName }}</span> por el precio de $<span id="total">{{ totalPrice
+                }}</span>
         </p>
-
         <div class="button-container">
-            <button @click="handleBuyButtonClick" class="buy-button">Comprar ahora</button>
-            <button @click="handleResetButtonClick" class="reset-button">Eliminar Reserva</button>
-            <!-- Otros botones aquí -->
+            <button id="buyButton" class="buy-button" @click="handleBuyButtonClick">Comprar ahora</button>
+            <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
+            <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
+            <a class="view-reservations-button">Volver inicio</a>
         </div>
-
-        <!-- Popup de email -->
-        <div id="emailPopup" v-if="showEmailPopup" class="email-popup">
+        <div id="emailPopup" class="email-popup" v-show="showEmailPopup">
             <div class="email-popup-content">
-                <span class="close" @click="closeEmailPopup">&times;</span>
                 <p>Introduce tu correo electrónico:</p>
-                <input type="email" v-model="userEmail" placeholder="Correo electrónico" />
+                <input type="email" id="emailInput" v-model="email" placeholder="Correo electrónico" />
                 <button @click="submitEmail">Enviar</button>
             </div>
         </div>
@@ -60,114 +54,229 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
-import type { Ref } from 'vue';
-
 interface Obra {
-    id: number;
     nombre: string;
     precio: number;
-    descripcion: string;
-    reserva: string;
 }
 
 export default {
-    name: 'Reservas',
-    setup() {
-        const obras: Ref<Obra[]> = ref([]);
-        const selectedObraId: Ref<number | null> = ref(null);
-        const purchaseAlert: Ref<boolean> = ref(false);
-        const rows: Ref<Array<Array<{ index: number, selected: boolean, occupied: boolean }>>> = ref([]);
-        const selectedSeatsCount: Ref<number> = ref(0);
-        const selectedObraName: Ref<string> = ref('');
-        const totalPrice: Ref<number> = ref(0);
-        const showEmailPopup: Ref<boolean> = ref(false);
-        const userEmail: Ref<string> = ref('');
-
-        const isSelectedSeat = (rowIndex: number, seatIndex: number): boolean => {
-            return rows.value[rowIndex][seatIndex].selected;
+    name: 'ReservasComponente',
+    data() {
+        return {
+            obras: [] as Obra[],
+            selectedObra: null,
+            selectedSeats: [],
+            selectedObraName: '',
+            totalPrice: 0,
+            rows: Array(6).fill(Array(8).fill('seat')),
+            showEmailPopup: false,
+            email: '',
         };
-
-        const isOccupiedSeat = (rowIndex: number, seatIndex: number): boolean => {
-            return rows.value[rowIndex][seatIndex].occupied;
-        };
-
-        const toggleSeatSelection = (rowIndex: number, seatIndex: number) => {
-            if (!rows.value[rowIndex][seatIndex].occupied) {
-                rows.value[rowIndex][seatIndex].selected = !rows.value[rowIndex][seatIndex].selected;
-                selectedSeatsCount.value = rows.value.flat().filter(seat => seat.selected).length;
-                // Actualizar el nombre y el precio total según la obra seleccionada
-                const selectedObra = obras.value.find(obra => obra.id === selectedObraId.value);
-                if (selectedObra) {
-                    selectedObraName.value = selectedObra.nombre;
-                    totalPrice.value = selectedObra.precio * selectedSeatsCount.value;
-                }
-            }
-        };
-
-        const handleBuyButtonClick = () => {
-            // Simula la compra de asientos
-            rows.value.forEach(row => row.forEach(seat => {
-                if (seat.selected) seat.occupied = true; // Marcar los asientos seleccionados como ocupados
-            }));
-            purchaseAlert.value = true; // Mostrar alerta de compra exitosa
-            selectedSeatsCount.value = 0; // Resetear el contador de asientos seleccionados
-            totalPrice.value = 0; // Resetear el precio total
-            showEmailPopup.value = true; // Mostrar popup para enviar email
-        };
-
-        const handleResetButtonClick = () => {
-            // Resetear la selección de asientos
-            rows.value.forEach(row => row.forEach(seat => seat.selected = false));
-            selectedSeatsCount.value = 0; // Resetear el contador de asientos seleccionados
-            totalPrice.value = 0; // Resetear el precio total
-            purchaseAlert.value = false; // Ocultar alerta de compra
-        };
-
-        const closeEmailPopup = () => {
-            showEmailPopup.value = false;
-        };
-
-        const submitEmail = () => {
-            // Aquí debes añadir la lógica para enviar el email, este es un placeholder
-            console.log(`Enviando email a ${userEmail.value}`);
-            showEmailPopup.value = false; // Cierra el popup después de enviar
-        };
-
-        onMounted(async () => {
+    },
+    methods: {
+        async fetchObras() {
             try {
                 const response = await fetch('http://localhost:3000/obras');
-                obras.value = await response.json();
-                // Inicializa los asientos de ejemplo
-                rows.value = Array(5).fill(0).map(() => Array(8).fill(0).map(() => ({ index: 0, selected: false, occupied: false })));
+                const data = await response.json();
+                this.obras = data;
             } catch (error) {
                 console.error('Hubo un error al cargar las obras:', error);
             }
-        });
-
-        return {
-            obras,
-            selectedObraId,
-            purchaseAlert,
-            rows,
-            isSelectedSeat,
-            isOccupiedSeat,
-            toggleSeatSelection,
-            selectedSeatsCount,
-            selectedObraName,
-            totalPrice,
-            showEmailPopup,
-            userEmail,
-            handleBuyButtonClick,
-            handleResetButtonClick,
-            closeEmailPopup,
-            submitEmail,
-        };
+        },
+        toggleSeat(rowIndex: number, seatIndex: number) {
+            const currentSeat = this.rows[rowIndex][seatIndex];
+            if (currentSeat !== 'occupied') { 
+                const newSeatStatus = currentSeat === 'selected' ? '' : 'selected'; 
+                this.rows[rowIndex] = [
+                    ...this.rows[rowIndex].slice(0, seatIndex),
+                    newSeatStatus,
+                    ...this.rows[rowIndex].slice(seatIndex + 1)
+                ];
+            }
+        },
+        handleBuyButtonClick() {
+        },
+        handleResetButtonClick() {
+        },
+        submitEmail() {
+        }
     },
+    mounted() {
+        this.fetchObras();
+    }
 };
 </script>
 
-
 <style scoped>
-/* Tus estilos aquí */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #342D29; 
+    color: #FFF; 
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.obras-container {
+    margin: 20px;
+    text-align: center;
+}
+
+.obras-container select {
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #5E503F;
+    color: white;
+    border: none;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.seat {
+    background-color: #7B6F60;
+    margin: 5px;
+    height: 40px;
+    width: 40px;
+    border-radius: 5px;
+    transition: transform 0.3s;
+}
+
+.seat:hover:not(.occupied) {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.seat.selected {
+    background-color: #2FDD92;
+}
+
+.seat.occupied {
+    background-color: #D9534F;
+}
+
+.showcase {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 20px;
+}
+
+.showcase li {
+    display: flex;
+    align-items: center;
+    margin: 0 15px;
+}
+
+.showcase .seat {
+    margin-right: 10px;
+}
+
+.text {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.buy-button, .reset-button, .view-reservations-button {
+    background-color: #4ECCA3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.buy-button:hover, .reset-button:hover, .view-reservations-button:hover {
+    background-color: #3BAD87;
+}
+
+.email-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+.email-popup-content {
+    background-color: #FFF;
+    padding: 20px;
+    border-radius: 10px;
+    color: black;
+    text-align: center;
+}
+
+#emailInput {
+    width: 300px;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.email-popup button {
+    background-color: #4ECCA3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.alert {
+    position: fixed;
+    top: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    display: none;
+    z-index: 100;
+}
+
+@media (max-width: 600px) {
+    .seat {
+        height: 30px;
+        width: 30px;
+    }
+
+    .container {
+        flex-direction: column;
+    }
+
+    .button-container {
+        flex-direction: column;
+    }
+
+    .buy-button, .reset-button, .view-reservations-button {
+        margin-bottom: 10px;
+    }
+}
 </style>

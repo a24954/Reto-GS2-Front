@@ -3,10 +3,9 @@ import Home from '../views/HomeView.vue';
 import Obras from '../views/ObrasView.vue';
 import Intranet from '../views/IntranetView.vue';
 import ObrasIntranet from '../views/ObrasIntranetView.vue';
+import Reservas from '@/components/Reservas.vue';
 
 const router = createRouter({
-  // process.env.BASE_URL debería ser la URL base de tu aplicación, por ejemplo '/'
-  // Si no tienes una variable de entorno configurada, puedes poner directamente '/'
   history: createWebHistory('/'),
   routes: [
     {
@@ -17,7 +16,7 @@ const router = createRouter({
     {
       path: '/obras',
       name: 'Obras',
-      component: Obras // Agrega la ruta para Obras
+      component: Obras 
     },
     {
       path: '/intranet',
@@ -28,6 +27,11 @@ const router = createRouter({
       path: '/obrasintranet',
       name: 'ObrasIntranet',
       component: ObrasIntranet
+    },
+    {
+      path: '/reservas',
+      name: 'Reservas',
+      component: Reservas
     },
   ],
 });

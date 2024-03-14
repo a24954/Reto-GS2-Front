@@ -115,7 +115,7 @@ export default {
 }
 
 body {
-    background-color: #342D29; 
+    background-color: #C09057; 
     color: #FFF; 
     font-family: 'Roboto', sans-serif;
     display: flex;
@@ -133,7 +133,7 @@ body {
 .obras-container select {
     padding: 10px 20px;
     border-radius: 5px;
-    background-color: #5E503F;
+    background-color: #C09057;
     color: white;
     border: none;
     margin-top: 10px;
@@ -147,7 +147,7 @@ body {
 }
 
 .seat {
-    background-color: #7B6F60;
+    background-color: #C09057;
     margin: 5px;
     height: 40px;
     width: 40px;

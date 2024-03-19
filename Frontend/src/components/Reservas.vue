@@ -12,23 +12,24 @@
         </div>
         <ul class="showcase">
             <li>
-                <div class="seat"></div>
+                <SvgSeat class="seat"></SvgSeat>
                 <small>Libre</small>
             </li>
             <li>
-                <div class="seat selected"></div>
+                <SvgSeat class="seat selected"></SvgSeat>
                 <small>Seleccionado</small>
             </li>
             <li>
-                <div class="seat occupied"></div>
+                <SvgSeat class="seat occupied"></SvgSeat>
                 <small>Ocupado</small>
             </li>
         </ul>
         <div class="container">
             <div class="row" v-for="(row, rowIndex) in rows" :key="`row-${rowIndex}`">
                 <div v-for="(seatStatus, seatIndex) in row" :key="`seat-${rowIndex}-${seatIndex}`"
-                    :class="['seat', { selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }]"
+                    :class="{ selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }"
                     @click="toggleSeat(rowIndex, seatIndex)">
+                    <Svgbutaca></Svgbutaca>
                 </div>
             </div>
         </div>
@@ -54,6 +55,8 @@
 </template>
 
 <script lang="ts">
+import Svgbutaca from './Svgbutaca.vue'
+
 interface Obra {
     nombre: string;
     precio: number;
@@ -61,6 +64,9 @@ interface Obra {
 
 export default {
     name: 'ReservasComponente',
+    components: {
+        Svgbutaca,
+    },
     data() {
         return {
             obras: [] as Obra[],

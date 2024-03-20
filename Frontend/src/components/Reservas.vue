@@ -27,9 +27,9 @@
         <div class="container">
             <div class="row" v-for="(row, rowIndex) in rows" :key="`row-${rowIndex}`">
                 <div v-for="(seatStatus, seatIndex) in row" :key="`seat-${rowIndex}-${seatIndex}`"
-                    :class="{ selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }"
+                    :class="['seat-wrapper', { selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }]"
                     @click="toggleSeat(rowIndex, seatIndex)">
-                    <Svgbutaca></Svgbutaca>
+                    <Svgbutaca class="svg-seat"></Svgbutaca>
                 </div>
             </div>
         </div>
@@ -91,8 +91,8 @@ export default {
         },
         toggleSeat(rowIndex: number, seatIndex: number) {
             const currentSeat = this.rows[rowIndex][seatIndex];
-            if (currentSeat !== 'occupied') { 
-                const newSeatStatus = currentSeat === 'selected' ? '' : 'selected'; 
+            if (currentSeat !== 'occupied') {
+                const newSeatStatus = currentSeat === 'selected' ? '' : 'selected';
                 this.rows[rowIndex] = [
                     ...this.rows[rowIndex].slice(0, seatIndex),
                     newSeatStatus,
@@ -109,6 +109,7 @@ export default {
     },
     mounted() {
         this.fetchObras();
+        this.rows = Array.from({ length: 6 }, () => new Array(8).fill('seat'));
     }
 };
 </script>
@@ -121,8 +122,8 @@ export default {
 }
 
 body {
-    background-color: #C09057; 
-    color: #FFF; 
+    background-color: #C09057;
+    color: #FFF;
     font-family: 'Roboto', sans-serif;
     display: flex;
     flex-direction: column;
@@ -148,12 +149,20 @@ body {
 
 .container {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    width: 100%; 
+    margin: auto;
+    background-color: #C09057;
+}
+
+
+.row {
+    display: flex;
     justify-content: center;
 }
 
 .seat {
-    background-color: #C09057;
     margin: 5px;
     height: 40px;
     width: 40px;
@@ -161,8 +170,19 @@ body {
     transition: transform 0.3s;
 }
 
-.seat:hover:not(.occupied) {
-    transform: scale(1.2);
+.seat-wrapper {
+    transition: transform 0.3s, box-shadow 0.3s; 
+    box-sizing: border-box;
+}
+
+.svg-seat {
+    width: 170px;
+    max-width: 100%; 
+    max-height: 100%;
+}
+
+.seat:hover:not(.occupied),
+.seat-wrapper:hover:not(.occupied) {
     cursor: pointer;
 }
 
@@ -171,6 +191,21 @@ body {
 }
 
 .seat.occupied {
+    background-color: #D9534F;
+}
+
+.seat-wrapper:hover:not(.occupied) {
+    transform: none; 
+}
+
+.seat-wrapper.selected {
+    box-shadow: none; 
+}
+.seat-wrapper.selected .svg-seat {
+    fill: #2FDD92; 
+}
+
+.seat-wrapper.occupied {
     background-color: #D9534F;
 }
 
@@ -203,18 +238,14 @@ body {
     width: 100%;
 }
 
-.buy-button, .reset-button, .view-reservations-button {
-    background-color: #4ECCA3;
+.buy-button,
+.reset-button,
+.view-reservations-button {
+    background-color: #6F1D1D;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.buy-button:hover, .reset-button:hover, .view-reservations-button:hover {
-    background-color: #3BAD87;
 }
 
 .email-popup {
@@ -281,7 +312,9 @@ body {
         flex-direction: column;
     }
 
-    .buy-button, .reset-button, .view-reservations-button {
+    .buy-button,
+    .reset-button,
+    .view-reservations-button {
         margin-bottom: 10px;
     }
 }

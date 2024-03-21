@@ -25,9 +25,9 @@
             </li>
         </ul>
         <div class="container">
-            <div class="row" v-for="(row, rowIndex) in rows" :key="`row-${rowIndex}`">
-                <div v-for="(seatStatus, seatIndex) in row" :key="`seat-${rowIndex}-${seatIndex}`"
-                    :class="['seat-wrapper', { selected: seatStatus === 'selected', occupied: seatStatus === 'occupied' }]"
+            <div class="row" v-for="(row, rowIndex) in rows" :key="rowIndex">
+                <div v-for="(seat, seatIndex) in row" :key="seatIndex"
+                    :class="['contenedor-asiento', { 'seleccionado': seat.status === 'selected', 'ocupado': seat.status === 'occupied' }]"
                     @click="toggleSeat(rowIndex, seatIndex)">
                     <Svgbutaca class="svg-seat"></Svgbutaca>
                 </div>
@@ -74,7 +74,7 @@ export default {
             selectedSeats: [],
             selectedObraName: '',
             totalPrice: 0,
-            rows: Array(6).fill(Array(8).fill('seat')),
+            rows: Array(6).fill(Array(8).fill({ status: 'seat' })),
             showEmailPopup: false,
             email: '',
         };
@@ -89,16 +89,18 @@ export default {
                 console.error('Hubo un error al cargar las obras:', error);
             }
         },
-        toggleSeat(rowIndex: number, seatIndex: number) {
-            const currentSeat = this.rows[rowIndex][seatIndex];
-            if (currentSeat !== 'occupied') {
-                const newSeatStatus = currentSeat === 'selected' ? '' : 'selected';
-                this.rows[rowIndex] = [
-                    ...this.rows[rowIndex].slice(0, seatIndex),
-                    newSeatStatus,
-                    ...this.rows[rowIndex].slice(seatIndex + 1)
-                ];
-            }
+        toggleSeat(rowIndex:number, seatIndex:number) {
+            const newRow = this.rows[rowIndex].map((seat, index) => {
+                if (index === seatIndex) {
+                    return {
+                        ...seat,
+                        status: seat.status === 'selected' ? '' : 'selected' 
+                    };
+                }
+                return seat; 
+            });
+
+            this.$set(this.rows, rowIndex, newRow); 
         },
         handleBuyButtonClick() {
         },
@@ -140,9 +142,10 @@ body {
 .obras-container select {
     padding: 10px 20px;
     border-radius: 5px;
-    background-color: #C09057;
-    color: white;
-    border: none;
+    background-color: #DAA520;
+    color: #FFFFFF;
+    border: 2px solid #FFFFFF;
+    font-size: 16px;
     margin-top: 10px;
     cursor: pointer;
 }
@@ -151,7 +154,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%; 
+    width: 100%;
     margin: auto;
     background-color: #C09057;
 }
@@ -168,16 +171,17 @@ body {
     width: 40px;
     border-radius: 5px;
     transition: transform 0.3s;
+    background-color: #C09057;
 }
 
 .seat-wrapper {
-    transition: transform 0.3s, box-shadow 0.3s; 
+    transition: transform 0.3s, box-shadow 0.3s;
     box-sizing: border-box;
 }
 
 .svg-seat {
     width: 170px;
-    max-width: 100%; 
+    max-width: 100%;
     max-height: 100%;
 }
 
@@ -195,57 +199,76 @@ body {
 }
 
 .seat-wrapper:hover:not(.occupied) {
-    transform: none; 
+    transform: none;
 }
 
 .seat-wrapper.selected {
-    box-shadow: none; 
+    background-color: #2FDD92;
 }
+
+
 .seat-wrapper.selected .svg-seat {
-    fill: #2FDD92; 
+    fill: #2FDD92;
 }
 
 .seat-wrapper.occupied {
     background-color: #D9534F;
 }
 
+.contenedor-asiento.seleccionado .svg-seat {
+    fill: #2FDD92;
+}
+
+.contenedor-asiento.seleccionado, .contenedor-asiento .selected { 
+    background-color: #2FDD92; 
+}
+
 .showcase {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     list-style: none;
     padding: 20px;
+    margin: 0 auto;
+    width: 80%;
 }
 
 .showcase li {
     display: flex;
     align-items: center;
     margin: 0 15px;
+    font-size: 14px;
 }
 
 .showcase .seat {
     margin-right: 10px;
+    fill: #808080;
 }
 
 .text {
     margin-top: 20px;
     text-align: center;
+    font-size: 18px;
 }
 
 .button-container {
     margin-top: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     width: 100%;
 }
 
 .buy-button,
 .reset-button,
 .view-reservations-button {
-    background-color: #6F1D1D;
+    background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-size: 16px;
+    margin: 5px;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .email-popup {
@@ -316,6 +339,10 @@ body {
     .reset-button,
     .view-reservations-button {
         margin-bottom: 10px;
+    }
+
+    .view-reservations-button {
+        background-color: #555555;
     }
 }
 </style>

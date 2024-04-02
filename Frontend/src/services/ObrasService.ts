@@ -6,7 +6,7 @@ export interface Obra {
     photo: string;
 }
 
-const BASE_URL = 'http://localhost:5224/Obra'; // Reemplaza con la URL base de tu API
+const BASE_URL = 'http://localhost:5224/Obra'; 
 
 export const ObrasService = {
     async getObras(): Promise<Obra[]> {

@@ -4,6 +4,7 @@ import Obras from '../views/ObrasView.vue';
 import Intranet from '../views/IntranetView.vue';
 import ObrasIntranet from '../views/ObrasIntranetView.vue';
 import Reservas from '@/components/Reservas.vue';
+import Perfil from '../views/PerfilView.vue';
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -16,7 +17,7 @@ const router = createRouter({
     {
       path: '/obras',
       name: 'Obras',
-      component: Obras 
+      component: Obras
     },
     {
       path: '/intranet',
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/reservas',
       name: 'Reservas',
       component: Reservas
+    },
+    {
+      path: '/perfil',
+      name: 'Perfil',
+      component: Perfil
     },
   ],
 });

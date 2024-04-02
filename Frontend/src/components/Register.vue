@@ -31,7 +31,7 @@ export default {
         async register() {
             if (this.validateForm()) {
                 try {
-                    await useAuthStore().register(this.userData);
+                    //await useAuthStore().register(this.userData);
                     // Redireccionar al usuario al dashboard después del registro
                 } catch (error) {
                     console.error('Error al registrar:', error);

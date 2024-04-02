@@ -1,7 +1,6 @@
 <template>
     <Navbar />
-    <Reservas />
-    <Footer />
+    <Footer/>
 </template>
 
 <script lang="ts">
@@ -9,9 +8,8 @@ import Reservas from '../components/Reservas.vue'
 import Navbar from '../components/Navbar.vue'
 import Footer from '../components/Footer.vue';
 
-
 export default {
-    name: 'ObrasIntranetView',
+    name: 'Reservas',
     components: {
         Navbar,
         Reservas,
@@ -20,5 +18,5 @@ export default {
 };
 </script>
 
-<style scoped> 
+<style scoped>
 </style>

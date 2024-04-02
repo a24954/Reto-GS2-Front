@@ -32,7 +32,7 @@ export default {
         async login() {
             if (this.validateForm()) {
                 try {
-                    await useAuthStore().login(this.userData);
+                    //await useAuthStore().login(this.userData);
                     // Redireccionar al usuario al dashboard después del inicio de sesión
                 } catch (error) {
                     console.error('Error al iniciar sesión:', error);

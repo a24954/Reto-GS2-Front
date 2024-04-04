@@ -1,12 +1,14 @@
-export interface Obra {
+export type Obra = {
     idPlay: number;
     name: string;
     price: number;
     description: string;
     photo: string;
-}
+    duration: number;
+    date: string;
+} | null;
 
-const BASE_URL = 'http://localhost:5224/Obra'; 
+const BASE_URL = 'http://localhost:5224/Obra';
 
 export const ObrasService = {
     async getObras(): Promise<Obra[]> {
@@ -17,12 +19,14 @@ export const ObrasService = {
         return response.json();
     },
 
-    async getObra(id: number): Promise<Obra> {
+    async getObra(id: number): Promise<Obra | null> {
         const response = await fetch(`${BASE_URL}/${id}`);
         if (!response.ok) {
             throw new Error('Error al obtener la obra');
         }
-        return response.json();
+        const data = await response.json();
+        console.log(data); 
+        return data;
     },
 
     async createObra(obra: Obra): Promise<Obra> {
@@ -40,7 +44,7 @@ export const ObrasService = {
     },
 
     async updateObra(obra: Obra): Promise<void> {
-        const response = await fetch(`${BASE_URL}/${obra.idPlay}`, {
+        const response = await fetch(`${BASE_URL}/${obra?.idPlay}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -8,16 +8,19 @@
             </div>
             <div v-else class="obras-grid">
                 <div v-for="obra in obras" :key="obra.idPlay" class="obra">
-                    <img :src="obra.photo" alt="Foto de la obra" class="obra-photo"/>
+                    <img :src="obra.photo" alt="Foto de la obra" class="obra-photo" />
                     <div class="obra-info">
-                        <h3>{{ obra.name }} - ${{ obra.price }}</h3>
-                        <p>{{ obra.description }}</p>
-                        <button class="details-button">Ver detalles</button>
+                        <h3>{{ obra.name }}</h3>
+                        <h3>{{ obra?.description }}</h3>
+                        <button class="details-button">
+                            <router-link :to="{ name: 'DetallesObra', params: { idPlay: obra.idPlay.toString() } }">Ver
+                                detalles</router-link>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-            <Footera />
+        <Footera />
     </div>
 </template>
 
@@ -31,8 +34,8 @@ import Footera from '../components/Footer.vue';
 export default defineComponent({
     name: 'ObrasView',
     components: {
-    Navbar,
-    Footera,
+        Navbar,
+        Footera,
     },
     setup() {
         const obras = ref<Obra[]>([]);
@@ -55,8 +58,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
-.ejemplo{
+.ejemplo {
     display: flex;
     justify-content: center;
     text-align: center;
@@ -72,7 +74,7 @@ export default defineComponent({
 }
 
 .error-message {
-    color: red; 
+    color: red;
 }
 
 .obras-grid {
@@ -83,19 +85,21 @@ export default defineComponent({
 }
 
 .obra {
-    flex: 0 1 calc(50% - 20px); 
+    flex: 0 1 calc(50% - 20px);
     display: flex;
-    flex-direction: column; 
-    align-items: center; 
+    flex-direction: column;
+    align-items: center;
     background: #C09057;
-    border-radius: 8px; 
-    overflow: hidden; 
+    border-radius: 8px;
+    overflow: hidden;
     border: 3px solid black;
+    padding: 1em;
+    box-sizing: border-box;
 }
 
 .obra-photo {
-    max-width: 100%; 
-    height: auto; 
+    max-width: 100%;
+    height: auto;
     margin-top: 3%;
 }
 
@@ -105,27 +109,45 @@ export default defineComponent({
     flex-direction: column;
     text-align: center;
     align-items: center;
+    padding: 1em;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.obra-info h3:nth-child(2) {
+    font-size: 1em;
+    color: #555;
 }
 
 .details-button {
     margin-top: 10px;
-    padding: 10px 20px; 
-    background-color: #6F1D1D; 
-    color: white; 
+    padding: 10px 20px;
+    background-color: #6F1D1D;
+    color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px; 
-    font-size: 16px; 
+    border-radius: 5px;
+    font-size: 16px;
     margin-bottom: 5%;
 }
 
+.details-button a {
+    color: white;
+    text-decoration: none;
+}
+
 .details-button:hover {
-    background-color: #B8860B; 
+    background-color: #B8860B;
+}
+
+.router-link-active {
+    color: inherit;
+    text-decoration: none;
 }
 
 @media (max-width: 768px) {
     .obra {
-        flex: 0 1 100%; 
+        flex: 0 1 100%;
     }
 }
 </style>

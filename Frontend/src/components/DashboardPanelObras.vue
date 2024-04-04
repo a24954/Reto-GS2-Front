@@ -9,16 +9,16 @@
         <form @submit.prevent="crearObra">
             <input v-model="nuevaObra.name" type="text" placeholder="Nombre de la obra">
             <input v-model="nuevaObra.price" type="number" placeholder="Precio">
+            <input v-model="nuevaObra.duration" type="text" placeholder="Duración de la obra">
             <textarea v-model="nuevaObra.description" placeholder="Descripción"></textarea>
+            <input v-model="nuevaObra.date" type="datetime-local" placeholder="Fecha y hora de la obra">
             <input v-model="nuevaObra.photo" type="text" placeholder="URL de la foto">
             <button type="submit">Crear Obra</button>
         </form>
 
-        <!-- Lista de obras existentes -->
         <div v-for="obra in obras" :key="obra.idPlay">
             <h3>{{ obra.name }}</h3>
             <p>{{ obra.description }}</p>
-            <!-- Botón para eliminar obra -->
             <button @click="eliminarObra(obra.idPlay)">Eliminar</button>
         </div>
     </div>
@@ -34,7 +34,7 @@ export default {
     name: 'DashboardPanel',
     setup() {
         const obras = ref<Obra[]>([]);
-        const nuevaObra = ref<Obra>({ idPlay: 0, name: '', price: 0, description: '', photo: '' });
+        const nuevaObra = ref<Obra>({ idPlay: 0, name: '', price: 0, description: '', photo: '', duration: 0, date: new Date().toISOString().substring(0, 16), });
 
 
         const cargarObras = async () => {
@@ -52,7 +52,7 @@ export default {
                 console.log("Creando obra: ", nuevaObra.value);
                 const obraCreada = await ObrasService.createObra(nuevaObra.value);
                 obras.value.push(obraCreada);
-                nuevaObra.value = { idPlay: 0, name: '', price: 0, description: '', photo: '' };
+                nuevaObra.value = { idPlay: 0, name: '', price: 0, description: '', photo: '', duration: 0, date: new Date().toISOString().substring(0, 16), };
             } catch (error) {
                 console.error(error);
             }

@@ -98,10 +98,13 @@ export default defineComponent({
 }
 
 .obra-photo {
-    max-width: 100%;
-    height: auto;
-    margin-top: 3%;
+    width: 100%;
+    height: 450px;
+    border-radius: 10px;
+    margin: auto;
+    display: block;
 }
+
 
 .obra-info {
     display: flex;

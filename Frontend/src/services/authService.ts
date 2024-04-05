@@ -7,6 +7,11 @@ interface UserData {
     Rol: string | number;
 }
 
+interface LoginData {
+    UserName: string;
+    Password: string;
+}
+
 const API_URL = 'http://localhost:5224/Usuario';
 
 export interface LoginResponse {
@@ -15,18 +20,17 @@ export interface LoginResponse {
         role: string;
     };
 }
-export async function login(userData: UserData): Promise<LoginResponse> {
+export async function login(loginData: { UserName: string; Password: string }): Promise<LoginResponse> {
     try {
-        const response = await axios.post<LoginResponse>(`${API_URL}/login`, userData);
-        if (response.data.token) {
-            localStorage.setItem('user', JSON.stringify(response.data));
-        }
+        const response = await axios.post<LoginResponse>(`${API_URL}/login`, loginData);
         return response.data;
-    } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-            throw error.response?.data;
+    } catch (error: any) {
+        if (error.response && error.response.data && error.response.data.message) {
+            throw new Error(error.response.data.message);
+        } else if (error.response && error.response.data) {
+            throw new Error(JSON.stringify(error.response.data));
         } else {
-            throw error;
+            throw new Error('Error al comunicarse con el servidor');
         }
     }
 }
@@ -38,7 +42,7 @@ export async function register(userData: UserData): Promise<void> {
             Email: userData.Email,
             Password: userData.Password,
             Rol: userData.Rol === 'Admin' ? 1 : 2,
-            Reservas: [] 
+            Reservas: []
         };
         const response = await axios.post(`${API_URL}`, payload);
         return response.data;

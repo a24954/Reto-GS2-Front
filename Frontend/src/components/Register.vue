@@ -40,7 +40,8 @@ export default defineComponent({
                         Rol: 2
                     };
                     await register(formattedUserData);
-                    this.$router.push({ name: 'login' });
+                    alert('Registro exitoso, por favor inicie sesión.');
+                    this.$router.push('/perfil');
                 } catch (error) {
                     console.error('Error al registrar:', error);
                     this.error = true;

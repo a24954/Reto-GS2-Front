@@ -12,6 +12,7 @@
 </template>
 
 <script lang="ts">
+import axios from 'axios';
 import { defineComponent } from 'vue';
 import { login, getCurrentUser } from '@/services/authService';
 import type { LoginResponse } from '@/services/authService';
@@ -20,8 +21,10 @@ export default defineComponent({
     data() {
         return {
             userData: {
+                name: '',
                 email: '',
                 password: '',
+                rol: 2,
             },
             error: false,
             errorMessage: '',
@@ -29,35 +32,56 @@ export default defineComponent({
     },
     methods: {
         async login() {
+            const API_URL = 'http://localhost:5224/Usuario';
+
             if (this.validateForm()) {
                 try {
-                    const response: LoginResponse = await login(this.userData);
-                    if (response.user.role === 'admin') {
-                        this.$router.push('/intranet');
+                    const allUsersResponse = await axios.get(`${API_URL}`);
+                    const allUsers = allUsersResponse.data;
+                    interface User {
+                        UserName: string;
+                        Password: string;
+                        Rol: string;
+                    }
+                    const user = allUsers.find((u: User) => u.UserName === this.userData.name && u.Password === this.userData.password);
+
+                    if (user) {
+                        localStorage.setItem('currentUser', JSON.stringify(user));
+
+                        if (user.Rol === 'Admin') {
+                            this.$router.push('/intranet');
+                        } else {
+                            this.$router.push('/perfil');
+                        }
                     } else {
-                        this.$router.push('/perfil');
+                        this.error = true;
+                        this.errorMessage = 'Credenciales incorrectas.';
                     }
                 } catch (error) {
                     console.error('Error al iniciar sesión:', error);
                     this.error = true;
-                    this.errorMessage = 'Credenciales incorrectas o problemas con el servidor.';
+                    this.errorMessage = 'Problemas al comunicarse con el servidor.';
                 }
             }
         },
         validateForm() {
-            if (!this.userData.email || !this.userData.password) {
+            if (!this.userData.name || !this.userData.password) {
                 this.error = true;
-                this.errorMessage = 'Email y contraseña son obligatorios.';
+                this.errorMessage = 'El nombre de usuario y la contraseña son obligatorios.';
                 return false;
             }
             this.error = false;
             return true;
         },
         switchForm() {
-            this.$emit('switch-form'); 
+            this.$emit('switch-form');
         },
     },
-});
+    switchForm() {
+        this.$emit('switch-form');
+    },
+},
+);
 </script>
 
 <style scoped>

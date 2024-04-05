@@ -51,6 +51,11 @@ const router = createRouter({
       name: 'Register',
       component: () => import('@/views/PerfilView.vue') 
     },
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('@/views/PerfilView.vue') 
+    },
   ],
 });
 

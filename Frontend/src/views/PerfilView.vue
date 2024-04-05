@@ -1,13 +1,9 @@
 <template>
     <Navbar />
     <div class="auth-wrapper">
-        <div class="auth-container" :class="{ 'slide-left': showLogin, 'slide-right': !showLogin }">
-            <div v-if="!showLogin" class="form-container">
-                <Register @switch="toggleForm" />
-            </div>
-            <div v-if="showLogin" class="form-container">
-                <Login @switch="toggleForm" />
-            </div>
+        <div class="auth-container">
+            <Login v-if="!showRegister" @switch-form="toggleForm" />
+            <Register v-if="showRegister" @switch-form="toggleForm" />
         </div>
     </div>
     <Footer />
@@ -18,8 +14,9 @@ import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
+import { defineComponent } from 'vue';
 
-export default {
+export default defineComponent({
     name: 'PerfilView',
     components: {
         Navbar,
@@ -29,15 +26,20 @@ export default {
     },
     data() {
         return {
-            showLogin: true
+            showRegister: false
         };
     },
     methods: {
         toggleForm() {
-            this.showLogin = !this.showLogin;
-        }
+            this.showRegister = !this.showRegister; 
+        },
+        handleSwitchForm() {
+        },
+        showRegisterForm() {
+            this.$router.push('/register');
+        },
     }
-};
+});
 </script>
 
 

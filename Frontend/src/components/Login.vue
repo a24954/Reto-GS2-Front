@@ -12,9 +12,11 @@
 </template>
 
 <script lang="ts">
-//import { useAuthStore } from './authStore';
+import { defineComponent } from 'vue';
+import { login, getCurrentUser } from '@/services/authService';
+import type { LoginResponse } from '@/services/authService';
 
-export default {
+export default defineComponent({
     data() {
         return {
             userData: {
@@ -26,18 +28,19 @@ export default {
         };
     },
     methods: {
-        switchForm() {
-            this.$emit('switch');
-        },
         async login() {
             if (this.validateForm()) {
                 try {
-                    //await useAuthStore().login(this.userData);
-                    // Redireccionar al usuario al dashboard después del inicio de sesión
+                    const response: LoginResponse = await login(this.userData);
+                    if (response.user.role === 'admin') {
+                        this.$router.push('/intranet');
+                    } else {
+                        this.$router.push('/perfil');
+                    }
                 } catch (error) {
                     console.error('Error al iniciar sesión:', error);
                     this.error = true;
-                    this.errorMessage = 'Ha ocurrido un error al iniciar sesión.';
+                    this.errorMessage = 'Credenciales incorrectas o problemas con el servidor.';
                 }
             }
         },
@@ -50,8 +53,11 @@ export default {
             this.error = false;
             return true;
         },
+        switchForm() {
+            this.$emit('switch-form'); 
+        },
     },
-};
+});
 </script>
 
 <style scoped>

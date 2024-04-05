@@ -3,7 +3,7 @@
         <h2>Registro</h2>
         <form @submit.prevent="register">
             <input v-model="userData.name" type="text" placeholder="Nombre" required>
-            <input v-model="userData.email" type="email" placeholder="Email" required>
+            <input v-model="userData.email" type="text" placeholder="Email" required>
             <input v-model="userData.password" type="password" placeholder="Contraseña" required>
             <button type="submit">Registrarse</button>
         </form>
@@ -13,15 +13,17 @@
 </template>
 
 <script lang="ts">
-//import { useAuthStore } from './authStore';
+import { defineComponent } from 'vue';
+import { register } from '@/services/authService';
 
-export default {
+export default defineComponent({
     data() {
         return {
             userData: {
                 name: '',
                 email: '',
                 password: '',
+                rol: 2,
             },
             error: false,
             errorMessage: '',
@@ -31,29 +33,41 @@ export default {
         async register() {
             if (this.validateForm()) {
                 try {
-                    //await useAuthStore().register(this.userData);
-                    // Redireccionar al usuario al dashboard después del registro
+                    const formattedUserData = {
+                        UserName: this.userData.name,
+                        Email: this.userData.email,
+                        Password: this.userData.password,
+                        Rol: 2
+                    };
+                    await register(formattedUserData);
+                    this.$router.push({ name: 'login' });
                 } catch (error) {
                     console.error('Error al registrar:', error);
                     this.error = true;
-                    this.errorMessage = 'Ha ocurrido un error al registrar.';
+                    this.errorMessage = 'No se pudo crear la cuenta.';
                 }
             }
         },
         switchToLogin() {
-            this.$emit('switch');
+            this.$emit('switch-form');
         },
-        validateForm() {
+        validateForm(): boolean {
             if (!this.userData.name || !this.userData.email || !this.userData.password) {
                 this.error = true;
                 this.errorMessage = 'Todos los campos son obligatorios.';
                 return false;
             }
+            if (this.userData.email && !this.userData.email.includes('@')) {
+                this.error = true;
+                this.errorMessage = 'Por favor ingrese un correo electrónico válido.';
+                return false;
+            }
             this.error = false;
             return true;
-        },
+        }
     },
-};
+})
+
 </script>
 
 <style scoped>

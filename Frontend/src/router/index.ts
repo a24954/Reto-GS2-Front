@@ -46,6 +46,11 @@ const router = createRouter({
       component: DetallesObraView,
       props: true
     },
+    {
+      path: '/register',
+      name: 'Register',
+      component: () => import('@/views/PerfilView.vue') 
+    },
   ],
 });
 

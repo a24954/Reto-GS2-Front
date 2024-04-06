@@ -6,8 +6,7 @@ interface UserData {
     Password: string;
     Rol: string | number;
 }
-
-interface LoginData {
+interface LoginRequest {
     UserName: string;
     Password: string;
 }
@@ -17,12 +16,27 @@ const API_URL = 'http://localhost:5224/Usuario';
 export interface LoginResponse {
     token: string;
     user: {
-        role: string;
+        rol: string;
     };
 }
-export async function login(loginData: { UserName: string; Password: string }): Promise<LoginResponse> {
+
+export enum UserRole {
+    Admin = 1,
+    StandardUser = 2,
+}
+
+export interface User {
+    IdUser: number;
+    UserName: string;
+    Password: string;
+    Email: string;
+    rol: number;    
+}
+
+export async function login(loginData: LoginRequest): Promise<User> {
     try {
-        const response = await axios.post<LoginResponse>(`${API_URL}/login`, loginData);
+        const API_URL = 'http://localhost:5224/UsuarioLogin/Login';
+        const response = await axios.post<User>(API_URL, loginData);
         return response.data;
     } catch (error: any) {
         if (error.response && error.response.data && error.response.data.message) {

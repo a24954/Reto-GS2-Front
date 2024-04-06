@@ -2,7 +2,7 @@
     <div class="form-container">
         <h2>Iniciar Sesión</h2>
         <form @submit.prevent="login">
-            <input v-model="userData.email" type="email" placeholder="Email" required>
+            <input v-model="userData.name" type="text" placeholder="Name" required>
             <input v-model="userData.password" type="password" placeholder="Contraseña" required>
             <button type="submit">Iniciar Sesión</button>
         </form>
@@ -16,6 +16,8 @@ import axios from 'axios';
 import { defineComponent } from 'vue';
 import { login, getCurrentUser } from '@/services/authService';
 import type { LoginResponse } from '@/services/authService';
+import { login as loginUser } from '@/services/authService';
+import { UserRole, type User } from '@/services/authService';
 
 export default defineComponent({
     data() {
@@ -30,30 +32,29 @@ export default defineComponent({
             errorMessage: '',
         };
     },
-    methods: {
-        async login() {
-            const API_URL = 'http://localhost:5224/Usuario';
 
+    methods: {
+
+        async login() {
             if (this.validateForm()) {
                 try {
-                    const allUsersResponse = await axios.get(`${API_URL}`);
-                    const allUsers = allUsersResponse.data;
-                    interface User {
-                        UserName: string;
-                        Password: string;
-                        Rol: string;
-                    }
-                    const user = allUsers.find((u: User) => u.UserName === this.userData.name && u.Password === this.userData.password);
+                    const loginRequest = {
+                        UserName: this.userData.name,
+                        Password: this.userData.password,
+                    };
 
-                    if (user) {
-                        localStorage.setItem('currentUser', JSON.stringify(user));
+                    const userResponse = await login(loginRequest);
 
-                        if (user.Rol === 'Admin') {
+                    if (userResponse && userResponse.rol !== undefined) {
+                        localStorage.setItem('currentUser', JSON.stringify(userResponse));
+                        console.log(userResponse.rol)
+                        if (Number(userResponse.rol) === 1) {
                             this.$router.push('/intranet');
-                        } else {
-                            this.$router.push('/perfil');
+                        } else if (Number(userResponse.rol) === 2) {
+                            this.$router.push('/');
                         }
                     } else {
+                        console.log(userResponse);
                         this.error = true;
                         this.errorMessage = 'Credenciales incorrectas.';
                     }
@@ -64,6 +65,7 @@ export default defineComponent({
                 }
             }
         },
+
         validateForm() {
             if (!this.userData.name || !this.userData.password) {
                 this.error = true;
@@ -73,6 +75,7 @@ export default defineComponent({
             this.error = false;
             return true;
         },
+
         switchForm() {
             this.$emit('switch-form');
         },

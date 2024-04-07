@@ -6,6 +6,7 @@ import ObrasIntranet from '../views/ObrasIntranetView.vue';
 import Reservas from '../components/Reservas.vue';
 import Perfil from '../views/PerfilView.vue';
 import DetallesObraView from '../views/DetallesObraView.vue';
+import UsuarioView from '../views/UsuarioIntranetView.vue';
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/obrasintranet',
       name: 'ObrasIntranet',
       component: ObrasIntranet
+    },
+    {
+      path: '/usuarioview',
+      name: 'UsuarioView',
+      component: UsuarioView
     },
     {
       path: '/reservas',

@@ -10,14 +10,14 @@
         <div class="ds-menu">
             <ul>
                 <li><router-link to="/ObrasIntranet">Obras</router-link></li>
-                <li><a href="usuarios.html"><i class="fa-solid fa-truck-fast"></i><span>Users</span></a></li>
+                <li><router-link to="/UsuarioView">Usuario</router-link></li>
                 <li><a href="productos.html"><i class="fa-solid fa-truck-fast"></i><span>Products</span></a></li>
             </ul>
         </div>
 
         <div class="sign-off">
-            <a onclick="Logout()" href="#" id="logout" class="btn-sign-off">
-                <span><router-link to="/">SALIR</router-link></span>
+            <a @click="logout" href="#" class="btn-sign-off">
+                <span>SALIR</span>
             </a>
         </div>
 
@@ -25,14 +25,28 @@
 </template>
 
 <script lang="ts">
-export default {
+import { defineComponent } from 'vue';
+import { useRouter } from 'vue-router';
+
+export default defineComponent({
     name: 'LeftMenu',
-    // Aquí puedes agregar data, methods, computed properties, etc.
-};
+    setup() {
+        const router = useRouter();
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+
+            router.push('/');
+        }
+
+        return {
+            logout,
+        };
+    },
+});
 </script>
 
 <style scoped>
-
 .ds-left-menu {
     background: var(--color-1);
     height: 100vh;
@@ -57,13 +71,13 @@ export default {
 }
 
 .ds-left-menu.menu-active ul li a span,
-.ds-left-menu.menu-active .sign-off  a span {
+.ds-left-menu.menu-active .sign-off a span {
     visibility: hidden;
     display: none;
 }
 
 .ds-left-menu.menu-active ul li a i,
-.ds-left-menu.menu-active .sign-off  a i {
+.ds-left-menu.menu-active .sign-off a i {
     margin-right: 0;
 }
 
@@ -86,29 +100,36 @@ export default {
 }
 
 .ds-menu ul {
-    list-style-type: none; /* Elimina los puntos de la lista */
-    padding-left: 0; /* Elimina el padding izquierdo que suele causar un indentado en las listas */
+    list-style-type: none;
+    /* Elimina los puntos de la lista */
+    padding-left: 0;
+    /* Elimina el padding izquierdo que suele causar un indentado en las listas */
 }
 
 .ds-menu ul li a {
     cursor: pointer;
-    color: var(--color5); /* Asegúrate de que este color esté definido */
+    color: var(--color5);
+    /* Asegúrate de que este color esté definido */
     background: transparent;
     width: 100%;
     display: block;
     margin-bottom: 10px;
-    padding: 10px 20px; /* Ajusta el padding según necesites */
+    padding: 10px 20px;
+    /* Ajusta el padding según necesites */
     border-radius: 4px;
-    text-align: left; /* Alinea el texto a la izquierda si es necesario */
+    text-align: left;
+    /* Alinea el texto a la izquierda si es necesario */
 }
 
 .ds-menu ul li a:hover {
-    background: var(--color-2); /* Asegúrate de que este color esté definido */
+    background: var(--color-2);
+    /* Asegúrate de que este color esté definido */
     color: #fff;
 }
 
 .ds-menu ul li a i {
-    margin-right: 10px; /* Ajusta el margen derecho de los íconos si es necesario */
+    margin-right: 10px;
+    /* Ajusta el margen derecho de los íconos si es necesario */
 }
 
 .ds-perfil {
@@ -125,7 +146,8 @@ export default {
 
 .ds-perfil .info-perfil span {
     font-size: 16px;
-    color: #bcbcbd; /* Asegúrate de definir este color o reemplazarlo */
+    color: #bcbcbd;
+    /* Asegúrate de definir este color o reemplazarlo */
 }
 
 .sign-off {
@@ -139,7 +161,8 @@ export default {
 
 .sign-off a.btn-sign-off {
     cursor: pointer;
-    color: var(--color5); /* Asegúrate de definir este color o reemplazarlo */
+    color: var(--color5);
+    /* Asegúrate de definir este color o reemplazarlo */
     background: transparent;
     width: 100%;
     display: block;
@@ -148,9 +171,8 @@ export default {
 }
 
 .sign-off a.btn-sign-off:hover {
-    background: #dd4b39; /* Asegúrate de definir este color o reemplazarlo */
+    background: #dd4b39;
+    /* Asegúrate de definir este color o reemplazarlo */
     color: #fff;
 }
-
 </style>
-  

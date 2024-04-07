@@ -10,8 +10,8 @@
                 <li><router-link to="/">INICIO</router-link></li>
                 <li><router-link to="/Obras">OBRAS</router-link></li>
                 <li><router-link to="/Reservas">RESERVAS</router-link></li>
-                <li><router-link to="/Intranet">INTRANET</router-link></li>
-                <li><router-link to="/Perfil">PERFIL</router-link></li>
+                <li v-if="isLoggedIn" @click="logout"><router-link to="/">CERRAR SESION</router-link></li>
+                <li v-else><router-link to="/Login">INICIAR SESIÓN</router-link></li>
             </ul>
         </nav>
         <section></section>
@@ -19,10 +19,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
-    name: 'Navbar',
+    setup() {
+        const router = useRouter();
+        const isLoggedIn = ref(false);
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            isLoggedIn.value = !!user; 
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            isLoggedIn.value = false;
+            router.push('/'); 
+        }
+
+        checkLoginStatus();
+
+        return { isLoggedIn, logout };
+    },
 });
 </script>
 
@@ -126,4 +145,3 @@ li a:hover {
     }
 }
 </style>
-

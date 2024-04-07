@@ -58,32 +58,40 @@ export default defineComponent({
                         this.error = true;
                         this.errorMessage = 'Credenciales incorrectas.';
                     }
-                } catch (error) {
-                    console.error('Error al iniciar sesión:', error);
-                    this.error = true;
-                    this.errorMessage = 'Problemas al comunicarse con el servidor.';
+                }catch (error) {
+                        if (axios.isAxiosError(error) && error.response) {
+                            if (error.response.status === 401) {
+                                this.errorMessage = 'Credenciales incorrectas.';
+                            } else {
+                                this.errorMessage = 'Error al iniciar sesión: ' + (error.response.data.message || 'Un error ha ocurrido');
+                            }
+                        } else {
+                            this.errorMessage = 'Usuario o contraseña incorrectas.';
+                        }
+                        this.error = true;
+                        console.error('Error al iniciar sesión:', error);
+                    }
                 }
-            }
         },
 
-        validateForm() {
-            if (!this.userData.name || !this.userData.password) {
-                this.error = true;
-                this.errorMessage = 'El nombre de usuario y la contraseña son obligatorios.';
-                return false;
-            }
-            this.error = false;
-            return true;
-        },
+            validateForm() {
+                if (!this.userData.name || !this.userData.password) {
+                    this.error = true;
+                    this.errorMessage = 'El nombre de usuario y la contraseña son obligatorios.';
+                    return false;
+                }
+                this.error = false;
+                return true;
+            },
 
+            switchForm() {
+                this.$emit('switch-form');
+            },
+        },
         switchForm() {
             this.$emit('switch-form');
         },
     },
-    switchForm() {
-        this.$emit('switch-form');
-    },
-},
 );
 </script>
 

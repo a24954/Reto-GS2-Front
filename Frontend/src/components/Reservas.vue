@@ -95,10 +95,10 @@ export default {
             }
         },
         toggleSeat(rowIndex:number, seatIndex:number) {
-            const newRow = this.rows[rowIndex].map((seat, index) => {
+            const newRow = this.rows[rowIndex].map((seat : number, index: number) => {
                 if (index === seatIndex) {
                     return {
-                        ...seat,
+                        seat,
                         status: seat.status === 'selected' ? '' : 'selected' 
                     };
                 }

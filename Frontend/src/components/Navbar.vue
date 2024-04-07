@@ -5,7 +5,9 @@
             <label for="check" class="checkbtn">
                 <i class="fa-solid fa-bars"></i>
             </label>
-            <a class="enlace"><img src="../../Imagenes/Logo.png" alt="" class="logo"></a>
+            <div class="logo-container">
+                <a class="enlace"><img src="../../Imagenes/Logo.png" alt="" class="logo"></a>
+            </div>
             <ul>
                 <li><router-link to="/">INICIO</router-link></li>
                 <li><router-link to="/Obras">OBRAS</router-link></li>
@@ -46,6 +48,19 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.logo-container {
+    position: relative;
+}
+
+.logo-container:hover .logo {
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 nav {
     background: #C09057;
     height: 80px;

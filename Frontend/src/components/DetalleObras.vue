@@ -6,7 +6,8 @@
             <p class="obra-price">Precio: ${{ obra.price }}</p>
             <p class="obra-duration">Duración: {{ obra.duration }}</p>
             <div class="buttons-container">
-                <button class="btn-reservar">Reservar</button>
+                <router-link :to="{ name: 'Reservas', params: { idObra: obra.idPlay } }">Reservar</router-link>
+
                 <router-link to="/obras" class="btn-volver">Volver a las obras</router-link>
             </div>
         </div>
@@ -18,6 +19,7 @@
 import { defineComponent } from 'vue';
 import type { PropType } from 'vue';
 import type { Obra } from '../services/ObrasService';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
     props: {
@@ -26,6 +28,21 @@ export default defineComponent({
             required: true
         }
     },
+    setup(props) {
+        const router = useRouter();
+
+        const reservarObra = () => {
+            router.push({ name: 'reservas', params: { idObra: props.obra?.idPlay } });
+        };
+        const reservar = () => {
+            const router = useRouter();
+            router.push({ name: 'Reservas', params: { idObra: obra.idPlay } });
+        };
+
+        return {
+            reservarObra
+        };
+    }
 });
 </script>
 
@@ -50,12 +67,9 @@ export default defineComponent({
     margin-bottom: 1em;
 }
 
-.obra-info {
-}
+.obra-info {}
 
-.obra-title{
-
-}
+.obra-title {}
 
 
 .obra-price,

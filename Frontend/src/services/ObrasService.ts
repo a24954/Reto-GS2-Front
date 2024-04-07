@@ -10,6 +10,8 @@ export type Obra = {
 
 const BASE_URL = 'http://localhost:5224/Obra';
 
+
+
 export const ObrasService = {
     async getObras(): Promise<Obra[]> {
         const response = await fetch(BASE_URL);

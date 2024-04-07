@@ -11,7 +11,7 @@
             <ul>
                 <li><router-link to="/ObrasIntranet">Obras</router-link></li>
                 <li><router-link to="/UsuarioView">Usuario</router-link></li>
-                <li><a href="productos.html"><i class="fa-solid fa-truck-fast"></i><span>Products</span></a></li>
+                <li><router-link to="/SesionView">Sesiones</router-link></li>
             </ul>
         </div>
 

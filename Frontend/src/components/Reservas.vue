@@ -42,7 +42,7 @@
             <button id="buyButton" class="buy-button" @click="handleBuyButtonClick">Comprar ahora</button>
             <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
             <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
-            <a class="view-reservations-button">Volver inicio</a>
+            <button><router-link to="/obras" class="btn-volver">Volver a las obras</router-link></button>
         </div>
         <div id="emailPopup" class="email-popup" v-show="showEmailPopup">
             <div class="email-popup-content">
@@ -56,6 +56,9 @@
 
 <script lang="ts">
 import Svgbutaca from './Svgbutaca.vue'
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { getSessionesPorObra } from '@/services/sesionService';
 
 interface Obra {
     nombre: string;
@@ -79,9 +82,11 @@ export default {
             email: '',
         };
     },
+    
     methods: {
         async fetchObras() {
             try {
+                
                 const response = await fetch('http://localhost:3000/obras');
                 const data = await response.json();
                 this.obras = data;
@@ -108,11 +113,34 @@ export default {
         },
         submitEmail() {
         }
+        
     },
     mounted() {
         this.fetchObras();
         this.rows = Array.from({ length: 6 }, () => new Array(8).fill('seat'));
-    }
+    },
+    setup() {
+    const route = useRoute();
+    const sesiones = ref([]);
+    const idObra = route.params.idObra;
+
+    // ... restante del código de configuración
+
+    const cargarSesiones = async () => {
+      // Aquí iría la lógica para cargar las sesiones de la obra específica
+      // usando el idObra para realizar la petición al backend
+    };
+
+    onMounted(() => {
+      // Asegúrate de llamar a cargarSesiones dentro de onMounted para que se cargue al inicializar el componente
+      cargarSesiones();
+    });
+
+    return {
+      // ... devolver todas las propiedades y métodos que se necesitan en la plantilla
+      sesiones,
+    };
+  },
 };
 </script>
 

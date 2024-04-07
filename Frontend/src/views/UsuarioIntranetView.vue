@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import type { Usuario } from '../services/UserService.ts';
+import { Usuario } from '../services/UserService';
 import LeftMenu from '@/components/LeftMenu.vue';
 import DashboardPanelUsuario from '@/components/DashboardPanelUsuario.vue';
 

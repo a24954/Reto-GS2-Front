@@ -1,7 +1,6 @@
 <template>
     <div class="ds-panel">
-        <div class="panel-header">
-        </div>
+        <div class="panel-header"></div>
         <h1>Gestión de Usuarios</h1>
         <form @submit.prevent="crearUsuario">
             <input v-model="nuevoUsuario.nombre" type="text" placeholder="Nombre del usuario">
@@ -9,12 +8,12 @@
             <input v-model="nuevoUsuario.password" type="password" placeholder="Contraseña">
             <button type="submit">Crear Usuario</button>
         </form>
-
         <div v-for="usuario in usuarios" :key="usuario.idUser" class="usuario-item">
-            <h3>{{ usuario.nombre }}</h3>
-            <p>{{ usuario.email }}</p>
+            <p>Nombre: {{ usuario.nombre }}</p>
+            <p>Email: {{ usuario.email }}</p>
+            <p>Contraseña: {{ usuario.password }}</p>
             <button @click="editarUsuario(usuario)">Editar</button>
-            <button @click="eliminarUsuario(usuario.idUser)">Eliminar</button>
+            <button @click="handleEliminarUsuario(usuario)">Eliminar</button>
         </div>
     </div>
 </template>
@@ -24,39 +23,56 @@ import { ref, onMounted } from 'vue';
 import { userService } from '@/services/UserService';
 
 interface Usuario {
-    idUser: number;
+    idUser?: number;
     nombre: string;
     email: string;
     password: string;
 }
+
 export default {
     name: 'DashboardPanelUsuarios',
     setup() {
         const usuarios = ref<Usuario[]>([]);
-        const nuevoUsuario = ref({ nombre: '', email: '', password: '' });
+        const nuevoUsuario = ref<Omit<Usuario, 'idUser'>>({ nombre: '', email: '', password: '' });
 
         const cargarUsuarios = async () => {
             try {
                 usuarios.value = await userService.getUsers();
+                console.log(usuarios.value); 
             } catch (error) {
                 console.error('Error al cargar los usuarios:', error);
             }
         };
-
         const crearUsuario = async () => {
             try {
-                const usuarioCreado = await userService.createUser(nuevoUsuario.value);
-                usuarios.value.push(usuarioCreado);
-                nuevoUsuario.value = { nombre: '', email: '', password: '' };
+                const formattedUserData = {
+                    UserName: nuevoUsuario.value.nombre,
+                    Email: nuevoUsuario.value.email,
+                    Password: nuevoUsuario.value.password,
+                    Rol: 2
+                };
+                const usuarioCreado = await userService.createUser(formattedUserData);
+                if (usuarioCreado.idUser) {
+                    usuarios.value.push(usuarioCreado);
+                    nuevoUsuario.value = { nombre: '', email: '', password: '' };
+                }
             } catch (error) {
                 console.error('Error al crear el usuario:', error);
             }
         };
 
-        const editarUsuario = async (usuario) => {
+        const editarUsuario = async (usuario: Usuario) => {
         };
 
-        const eliminarUsuario = async (idUser) => {
+        const handleEliminarUsuario = async (usuario: Usuario) => {
+            if (usuario.idUser === undefined) {
+                console.error('No se puede eliminar un usuario sin ID.');
+                return;
+            }
+            await eliminarUsuario(usuario.idUser);
+        };
+
+        const eliminarUsuario = async (idUser: number) => {
             try {
                 await userService.deleteUser(idUser);
                 usuarios.value = usuarios.value.filter(u => u.idUser !== idUser);
@@ -74,6 +90,7 @@ export default {
             crearUsuario,
             editarUsuario,
             eliminarUsuario,
+            handleEliminarUsuario,
         };
     },
 };

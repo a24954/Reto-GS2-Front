@@ -7,6 +7,7 @@ import Reservas from '../components/Reservas.vue';
 import Perfil from '../views/PerfilView.vue';
 import DetallesObraView from '../views/DetallesObraView.vue';
 import UsuarioView from '../views/UsuarioIntranetView.vue';
+import SesionView from '../views/SesionesIntranetView.vue'
 
 const router = createRouter({
   history: createWebHistory('/'),
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/usuarioview',
       name: 'UsuarioView',
       component: UsuarioView
+    },
+    {
+      path: '/sesionview',
+      name: 'SesionView',
+      component: SesionView,
     },
     {
       path: '/reservas',

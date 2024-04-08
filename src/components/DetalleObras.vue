@@ -6,7 +6,9 @@
             <p class="obra-price">Precio: ${{ obra.price }}</p>
             <p class="obra-duration">Duración: {{ obra.duration }}</p>
             <div class="buttons-container">
-                <router-link :to="{ name: 'Reservas', params: { idObra: obra.idPlay, nombre: obra.name } }" class="btn-volver">Reservar</router-link>
+                <router-link :to="{ name: 'Reservas', params: { nombre: obra.name } }" class="btn-reservar">
+                    Reservar
+                </router-link>
 
                 <router-link to="/obras" class="btn-volver">Volver a las obras</router-link>
             </div>
@@ -26,24 +28,27 @@ export default defineComponent({
         obra: {
             type: Object as PropType<Obra>,
             required: true
-        }
+        },
     },
     setup(props) {
         const router = useRouter();
 
         const reservarObra = () => {
-            router.push({ name: 'reservas', params: { idObra: props.obra?.idPlay } });
+            if(props.obra && props.obra.idPlay) {
+                router.push({ name: 'reservas', params: { idObra: props.obra.idPlay } });
+            }
         };
-        const reservar = () => {
-            const router = useRouter();
-            router.push({ name: 'Reservas', params: { idObra: obra.idPlay } });
-        };
+            const reservar = () => {
+                const router = useRouter();
+                router.push({ name: 'Reservas', params: { idObra: props.obra?.idPlay } });
+            };
 
-        return {
-            reservarObra
-        };
-    }
-});
+            return {
+                reservarObra
+            };
+        }
+
+    });
 </script>
 
 <style scoped>

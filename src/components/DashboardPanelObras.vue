@@ -16,14 +16,12 @@
             <button type="submit">Crear Obra</button>
         </form>
 
-        <div v-for="obra in obras" :key="obra.idPlay">
-            <h3>{{ obra.name }}</h3>
-            <p>{{ obra.description }}</p>
-            <p>{{ obra.price }}</p>
-            <p>{{ obra.duration }}</p>
-            <!-- ... otros campos ... -->
-            <button @click="editarObra(obra)">Editar</button>
-            <button @click="eliminarObra(obra.idPlay)">Eliminar</button>
+        <div v-for="obra in obras" :key="obra?.idPlay">
+            <h3>{{ obra?.name }}</h3>
+            <p>{{ obra?.description }}</p>
+            <p>{{ obra?.price }}</p>
+            <p>{{ obra?.duration }}</p>
+            <button @click="eliminarObra(obra!.idPlay)">Eliminar</button>
         </div>
     </div>
 </template>
@@ -31,14 +29,33 @@
 <script lang="ts">
 
 import { ref, onMounted } from 'vue';
-import { ObrasService } from '../services/ObrasService'; // Asegúrate de que la ruta sea correcta
-import type { Obra } from '../services/ObrasService'; // Uso correcto de type import
+import { ObrasService } from '../services/ObrasService';
+import type { Obra } from '../services/ObrasService'; 
+
+
+interface Obra2 {
+    idPlay: number;
+    name: string;
+    price: number;
+    description: string;
+    photo: string;
+    duration: number;
+    date: string;
+}
 
 export default {
     name: 'DashboardPanel',
     setup() {
         const obras = ref<Obra[]>([]);
-        const nuevaObra = ref<Obra>({ idPlay: 0, name: '', price: 0, description: '', photo: '', duration: 0, date: new Date().toISOString().substring(0, 16), });
+        const nuevaObra = ref<Obra2>({
+            idPlay: 0,
+            name: '',
+            price: 0,
+            description: '',
+            photo: '',
+            duration: 0,
+            date: new Date().toISOString().substring(0, 16),
+        });
 
 
         const cargarObras = async () => {
@@ -52,20 +69,32 @@ export default {
         onMounted(cargarObras);
 
         const crearObra = async () => {
-            try {
-                console.log("Creando obra: ", nuevaObra.value);
-                const obraCreada = await ObrasService.createObra(nuevaObra.value);
-                obras.value.push(obraCreada);
-                nuevaObra.value = { idPlay: 0, name: '', price: 0, description: '', photo: '', duration: 0, date: new Date().toISOString().substring(0, 16), };
-            } catch (error) {
-                console.error(error);
+            if (nuevaObra.value) {
+                try {
+                    console.log("Creando obra: ", nuevaObra.value);
+                    const obraCreada = await ObrasService.createObra(nuevaObra.value);
+                    obras.value.push(obraCreada);
+                    nuevaObra.value = {
+                        idPlay: 0,
+                        name: '',
+                        price: 0,
+                        description: '',
+                        photo: '',
+                        duration: 0,
+                        date: new Date().toISOString().substring(0, 16),
+                    };
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                console.error("No se han completado los datos de la nueva obra.");
             }
         };
 
         const eliminarObra = async (id: number) => {
             try {
                 await ObrasService.deleteObra(id);
-                obras.value = obras.value.filter(obra => obra.idPlay !== id); // Elimina la obra de la lista
+                obras.value = obras.value.filter(obra => obra?.idPlay !== id); // Elimina la obra de la lista
             } catch (error) {
                 console.error(error);
             }

@@ -2,6 +2,12 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5224/Usuario';
 
+export type Usuario = {
+    id: number;
+    nombre: string;
+    email: string;
+};
+
 export const userService = {
     async getUsers(): Promise<any> {
         try {

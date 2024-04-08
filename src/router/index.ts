@@ -46,7 +46,8 @@ const router = createRouter({
     {
       path: '/reservas',
       name: 'Reservas',
-      component: Reservas
+      component: Reservas,
+      props: true
     },
     {
       path: '/perfil',

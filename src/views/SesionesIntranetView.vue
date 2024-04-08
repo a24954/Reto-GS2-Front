@@ -7,9 +7,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import type { Sesion } from '../services/sessionService';
+import type { Session } from '../services/sessionService';
 import LeftMenu from '../components/LeftMenu.vue';
 import DashboardPanelSesiones from '../components/DashboardPanelSesiones.vue';
+import sessionService from '../services/sessionService';
 
 export default defineComponent({
     name: 'SesionView',
@@ -18,7 +19,7 @@ export default defineComponent({
         DashboardPanelSesiones,
     },
     setup() {
-        const sesiones = ref<Sesion[]>([]);
+        const sesiones = ref<Session[]>([]);
         const error = ref<string | null>(null);
 
         const loadSesiones = async () => {

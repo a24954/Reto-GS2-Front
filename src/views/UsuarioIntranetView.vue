@@ -7,9 +7,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import { Usuario } from '../services/UserService';
 import LeftMenu from '@/components/LeftMenu.vue';
 import DashboardPanelUsuario from '@/components/DashboardPanelUsuario.vue';
+import { userService } from '@/services/UserService';
+import type { Usuario } from '@/services/UserService';
 
 export default defineComponent({
     name: 'UsuarioView',
@@ -23,7 +24,7 @@ export default defineComponent({
 
         const loadUsuarios = async () => {
             try {
-                usuarios.value = await UserService.getUsers(); // Asegúrate de que este método esté implementado en UserService
+                usuarios.value = await userService.getUsers(); 
             } catch (e) {
                 const err = e as Error;
                 error.value = err.message;

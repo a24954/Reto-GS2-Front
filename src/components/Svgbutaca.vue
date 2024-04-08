@@ -11,6 +11,6 @@
 <script lang="ts">
 // import butacasvg from '../svg/Butaca.svg'
 export default {
-    name: 'Svgbutaca'
+    name: 'Svgbutaca',
 }
 </script>

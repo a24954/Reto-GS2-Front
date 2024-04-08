@@ -17,7 +17,7 @@ interface Asiento {
     status: boolean;
 }
 
-interface Session {
+export interface Session {
     idSesion?: number;
     sesionTime: string;
     idPlay: number;

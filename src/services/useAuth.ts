@@ -1,8 +1,8 @@
 // useAuth.js
 import { ref } from 'vue';
 import * as authService from './authService';
-import { LoginRequest } from './authService';
-import { User } from './authService';
+import type { LoginRequest } from './authService';
+import type { User } from './authService';
 
 const user = ref(null);
 

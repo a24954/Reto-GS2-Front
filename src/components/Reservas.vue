@@ -4,19 +4,19 @@
             ¡Compra realizada con éxito!
         </div>
         <div class="obras-container">
-            <h2>Reserva para la obra: {{ selectedObraName }}</h2>
+            <h2>Reserva para la obra {{ selectedObraName }}</h2>
         </div>
         <ul class="showcase">
             <li>
-                <SvgSeat class="seat"></SvgSeat>
+                <Svgbutaca class="seat" style="background-color:#C09057;"></Svgbutaca>
                 <small>Libre</small>
             </li>
             <li>
-                <SvgSeat class="seat selected"></SvgSeat>
+                <Svgbutaca class="seat selected"></Svgbutaca>
                 <small>Seleccionado</small>
             </li>
             <li>
-                <SvgSeat class="seat occupied"></SvgSeat>
+                <Svgbutaca class="seat occupied"></Svgbutaca>
                 <small>Ocupado</small>
             </li>
         </ul>
@@ -36,6 +36,9 @@
         </p>
         <div class="button-container">
             <button id="buyButton" class="buy-button" @click="handleBuyButtonClick">Comprar ahora</button>
+            <div class="alert" ref="purchaseAlert" style="display:none;">
+                ¡Compra realizada con éxito!
+            </div>
             <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
             <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
             <button><router-link to="/obras" class="btn-volver, reset-button">Volver a las obras</router-link></button>
@@ -55,100 +58,159 @@ import Svgbutaca from './Svgbutaca.vue'
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ObrasService } from '../services/ObrasService';
+import { nextTick } from 'vue';
+import type { Reservation, ReservedSeatsResponse } from '../services/ObrasService';
+
 ObrasService.getObra
 
 interface Obra {
+    idPlay: number;
     nombre: string;
     precio: number;
 }
 
 interface Seat {
     status: string;
-    // Add any other properties that a seat might have, for example:
-    // number: number;
-    // price: number;
+    number: number;
+    price: number;
 }
+
 
 export default {
     name: 'ReservasComponente',
     components: {
         Svgbutaca,
     },
+    props: {
+        obra: Object
+    },
 
     data() {
         return {
-            obras: [] as Obra[],
-            selectedObra: null,
-            selectedSeats: [],
+            selectedObra: null as Obra | null,
+            selectedSeats: [] as number[],
             selectedObraName: '',
             totalPrice: 0,
-            rows: Array(6).fill(Array(8).fill({ status: 'seat' })),
+            rows: Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })),
             showEmailPopup: false,
             email: '',
         };
     },
 
     methods: {
-
-        async fetchObras() {
-            try {
-
-                const response = await fetch('http://localhost:5224/Obra');
-                const data = await response.json();
-                this.obras = data;
-            } catch (error) {
-                console.error('Hubo un error al cargar las obras:', error);
-            }
-        },
-        toggleSeat(rowIndex: number, seatIndex: number) {
-            const newRow = this.rows[rowIndex].map((seat: Seat, index: number) => {
-                if (index === seatIndex) {
-                    return {
-                        ...seat,
-                        status: seat.status === 'selected' ? '' : 'selected'
-                    };
-                }
-                return seat;
+        updateSeatsWithObraPrice: function (obraPrice: any) {
+            this.rows.forEach((row, rowIndex) => {
+                row.forEach((_seat: any, seatIndex: number) => {
+                    this.rows[rowIndex][seatIndex].price = obraPrice;
+                });
             });
-
-            this.rows[rowIndex] = newRow;
         },
-        handleBuyButtonClick() {
-        },
-        handleResetButtonClick() {
-        },
-        submitEmail() {
-        }
 
-    },
-    mounted() {
-        this.fetchObras();
-        this.rows = Array.from({ length: 6 }, () => new Array(8).fill('seat'));
-    },
-    setup() {
-        const route = useRoute();
-        const selectedObraName = ref('');
-        const sesiones = ref([]);
+        toggleSeat: function (rowIndex: number, seatIndex: number) {
+            const seat = this.rows[rowIndex][seatIndex];
+            const selectedObraPrice = this.obra ? this.obra.precio : 0;
 
-        onMounted(() => {
-            if (Array.isArray(route.params.nombre)) {
-                selectedObraName.value = route.params.nombre[0]; 
+            if (seat.status === 'selected') {
+                seat.status = 'seat';
+                this.totalPrice -= selectedObraPrice;
+                this.selectedSeats = this.selectedSeats.filter(s => s !== seat.number);
             } else {
-                selectedObraName.value = route.params.nombre; 
+                seat.status = 'selected';
+                this.totalPrice += selectedObraPrice;
+                this.selectedSeats.push(seat.number);
             }
-        });
+        },
 
-        const cargarSesiones = async () => {
-        };
+        calculateTotalPrice() {
+            this.totalPrice = this.selectedSeats.reduce((total, seatNumber) => {
+                let seat = this.findSeatByNumber(seatNumber);
+                return total + (seat ? seat.price : 0);
+            }, 0);
+        },
 
-        onMounted(() => {
-            cargarSesiones();
-        });
+        findSeatByNumber(seatNumber: number) {
+            for (let row of this.rows) {
+                for (let seat of row) {
+                    if (seat.number === seatNumber) {
+                        return seat;
+                    }
+                }
+            }
+            return null;
+        },
 
-        return {
-            sesiones,
-        };
+        async handleBuyButtonClick() {
+            if (!this.selectedObra) {
+                alert('No se ha seleccionado ninguna obra.');
+                return;
+            }
+
+            const reservationDetails: Reservation = {
+                obraId: this.selectedObra.idPlay, // Ahora estamos seguros de que idPlay no es undefined
+                seats: this.selectedSeats,
+                totalPrice: this.totalPrice,
+                reservedSeats: undefined
+            };
+
+            try {
+                const reservationResponse: ReservedSeatsResponse = await ObrasService.saveReservation(reservationDetails);
+
+                if (reservationResponse.reservedSeats) {
+                    this.rows = this.rows.map(row => row.map((seat: { number: any; }) => {
+                        if (reservationResponse.reservedSeats.includes(seat.number)) {
+                            return { ...seat, status: 'occupied' };
+                        }
+                        return seat;
+                    }));
+                } else {
+                    console.error('La propiedad reservedSeats no está en la respuesta');
+                }
+
+                this.selectedSeats = [];
+                this.totalPrice = 0;
+
+                this.showPurchaseAlert();
+            } catch (error) {
+                console.error('Hubo un error al guardar la reserva:', error);
+                alert('Hubo un error al procesar tu reserva. Por favor, intenta de nuevo.');
+            }
+        },
+
+
+        showPurchaseAlert() {
+            const purchaseAlert = this.$refs.purchaseAlert as HTMLElement;
+            if (purchaseAlert) {
+                purchaseAlert.style.display = 'block';
+                setTimeout(() => {
+                    purchaseAlert.style.display = 'none';
+                }, 3000);
+            }
+        },
+
+        handleResetButtonClick() {
+            this.selectedSeats = [];
+            this.totalPrice = 0;
+            for (let row of this.rows) {
+                for (let seat of row) {
+                    seat.status = 'seat';
+                }
+            }
+        },
+
+        submitEmail() {
+            console.log('Email enviado a: ', this.email);
+        }
     },
+
+    mounted() {
+        this.rows = this.rows.map((row, rowIndex) =>
+            row.map((_seat: number, seatIndex: number) => ({
+                status: 'seat',
+                number: rowIndex * this.rows[0].length + seatIndex + 1, // Ejemplo para generar un número único
+                price: 20, // Precio fijo por asiento, esto podría variar
+            }))
+        );
+    }
 };
 </script>
 
@@ -201,8 +263,8 @@ body {
     justify-content: center;
 }
 
-.row > .contenedor-asiento {
-    width: auto; /* o puedes definir un ancho específico si es necesario */
+.row>.contenedor-asiento {
+    width: auto;
 }
 
 .seat {

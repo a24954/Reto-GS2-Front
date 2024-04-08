@@ -13,7 +13,6 @@
         </form>
         <div v-for="sesion in sesiones" :key="sesion.idSesion" class="sesion-item">
             <p>Obra: {{ sesion.obra?.name }}</p>
-            <p>Inicio: {{ sesion.sessionTime }}</p>
             <p>Precio: {{ sesion.obra?.price }}</p>
             <button @click="eliminarSesion(sesion.idSesion)">Eliminar</button>
         </div>
@@ -46,7 +45,7 @@ interface Session {
     idPlay: number;
     asientos: Asiento[];
     obra?: Obra;
-    precio?: number; 
+    precio?: number;
 }
 
 export default defineComponent({
@@ -62,16 +61,15 @@ export default defineComponent({
         const cargarSesiones = async () => {
             try {
                 const response = await sessionService.getSessions();
-                sesiones.value = response.map(sesionDto => ({
+                /*sesiones.value = response.map(sesionDto => ({
                     idSesion: sesionDto.idSesion || undefined, 
-                    sessionTime: sesionDto.sessionTime as string, 
                     obra: sesionDto.obra,
                     asientos: sesionDto.asientos.map(asiento => ({
                         idSeats: asiento.idSeats,
                         number: asiento.number,
                         status: asiento.status
                     })),
-                }));
+                }));*/
             } catch (error) {
                 console.error(error);
             }
@@ -84,7 +82,6 @@ export default defineComponent({
                         idPlay: nuevaSesion.value.idPlay,
                         sessionTime: nuevaSesion.value.sessionTime,
                     };
-                    await sessionService.createSession(sesionACrear);
                     await cargarSesiones();
                 } catch (error) {
                     console.error(error);
@@ -99,7 +96,6 @@ export default defineComponent({
 
         const cargarObras = async () => {
             try {
-                obras.value = await ObrasService.getObras();
             } catch (error) {
                 console.error('Error al cargar las obras:', error);
             }

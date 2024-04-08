@@ -6,7 +6,7 @@ interface UserData {
     Password: string;
     Rol: string | number;
 }
-interface LoginRequest {
+export interface LoginRequest {
     UserName: string;
     Password: string;
 }

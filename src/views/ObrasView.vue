@@ -7,14 +7,15 @@
                 Error cargando las obras: {{ error }}
             </div>
             <div v-else class="obras-grid">
-                <div v-for="obra in obras" :key="obra.idPlay" class="obra">
-                    <img :src="obra.photo" alt="Foto de la obra" class="obra-photo" />
+                <div v-for="obra in obras" :key="obra?.idPlay" class="obra">
+                    <img :src="obra?.photo" alt="Foto de la obra" class="obra-photo" />
                     <div class="obra-info">
-                        <h3>{{ obra.name }}</h3>
+                        <h3>{{ obra?.name }}</h3>
                         <h3>{{ obra?.description }}</h3>
                         <button class="details-button">
-                            <router-link :to="{ name: 'DetallesObra', params: { idPlay: obra.idPlay.toString() } }">Ver
-                                detalles</router-link>
+                            <router-link :to="{ name: 'DetallesObra', params: { idPlay: obra?.idPlay.toString() } }">
+                                Ver detalles
+                            </router-link>
                         </button>
                     </div>
                 </div>

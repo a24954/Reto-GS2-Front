@@ -12,7 +12,6 @@
             <p>Nombre: {{ usuario.nombre }}</p>
             <p>Email: {{ usuario.email }}</p>
             <p>Contraseña: {{ usuario.password }}</p>
-            <button @click="editarUsuario(usuario)">Editar</button>
             <button @click="handleEliminarUsuario(usuario)">Eliminar</button>
         </div>
     </div>

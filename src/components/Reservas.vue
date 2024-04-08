@@ -4,11 +4,7 @@
             ¡Compra realizada con éxito!
         </div>
         <div class="obras-container">
-            <label>Obras del TEATRO:</label>
-            <select id="obras" v-model="selectedObra">
-                <option v-for="obra in obras" :key="obra.nombre" :value="obra">{{ obra.nombre }} (${{ obra.precio }})
-                </option>
-            </select>
+            <h2>Reserva para la obra: {{ selectedObraName }}</h2>
         </div>
         <ul class="showcase">
             <li>
@@ -29,7 +25,7 @@
                 <div v-for="(seat, seatIndex) in row" :key="seatIndex"
                     :class="['contenedor-asiento', { 'seleccionado': seat.status === 'selected', 'ocupado': seat.status === 'occupied' }]"
                     @click="toggleSeat(rowIndex, seatIndex)">
-                    <Svgbutaca class="svg-seat"></Svgbutaca>
+                    <Svgbutaca class="seat"></Svgbutaca>
                 </div>
             </div>
         </div>
@@ -42,7 +38,7 @@
             <button id="buyButton" class="buy-button" @click="handleBuyButtonClick">Comprar ahora</button>
             <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
             <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
-            <button><router-link to="/obras" class="btn-volver">Volver a las obras</router-link></button>
+            <button><router-link to="/obras" class="btn-volver, reset-button">Volver a las obras</router-link></button>
         </div>
         <div id="emailPopup" class="email-popup" v-show="showEmailPopup">
             <div class="email-popup-content">
@@ -58,11 +54,19 @@
 import Svgbutaca from './Svgbutaca.vue'
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { getSessionesPorObra } from '@/services/sesionService';
+import { ObrasService } from '../services/ObrasService';
+ObrasService.getObra
 
 interface Obra {
     nombre: string;
     precio: number;
+}
+
+interface Seat {
+    status: string;
+    // Add any other properties that a seat might have, for example:
+    // number: number;
+    // price: number;
 }
 
 export default {
@@ -70,6 +74,7 @@ export default {
     components: {
         Svgbutaca,
     },
+
     data() {
         return {
             obras: [] as Obra[],
@@ -82,30 +87,31 @@ export default {
             email: '',
         };
     },
-    
+
     methods: {
+
         async fetchObras() {
             try {
-                
-                const response = await fetch('http://localhost:3000/obras');
+
+                const response = await fetch('http://localhost:5224/Obra');
                 const data = await response.json();
                 this.obras = data;
             } catch (error) {
                 console.error('Hubo un error al cargar las obras:', error);
             }
         },
-        toggleSeat(rowIndex:number, seatIndex:number) {
-            const newRow = this.rows[rowIndex].map((seat : number, index: number) => {
+        toggleSeat(rowIndex: number, seatIndex: number) {
+            const newRow = this.rows[rowIndex].map((seat: Seat, index: number) => {
                 if (index === seatIndex) {
                     return {
-                        seat,
-                        status: seat.status === 'selected' ? '' : 'selected' 
+                        ...seat,
+                        status: seat.status === 'selected' ? '' : 'selected'
                     };
                 }
-                return seat; 
+                return seat;
             });
 
-            this.$set(this.rows, rowIndex, newRow); 
+            this.rows[rowIndex] = newRow;
         },
         handleBuyButtonClick() {
         },
@@ -113,34 +119,36 @@ export default {
         },
         submitEmail() {
         }
-        
+
     },
     mounted() {
         this.fetchObras();
         this.rows = Array.from({ length: 6 }, () => new Array(8).fill('seat'));
     },
     setup() {
-    const route = useRoute();
-    const sesiones = ref([]);
-    const idObra = route.params.idObra;
+        const route = useRoute();
+        const selectedObraName = ref('');
+        const sesiones = ref([]);
 
-    // ... restante del código de configuración
+        onMounted(() => {
+            if (Array.isArray(route.params.nombre)) {
+                selectedObraName.value = route.params.nombre[0]; 
+            } else {
+                selectedObraName.value = route.params.nombre; 
+            }
+        });
 
-    const cargarSesiones = async () => {
-      // Aquí iría la lógica para cargar las sesiones de la obra específica
-      // usando el idObra para realizar la petición al backend
-    };
+        const cargarSesiones = async () => {
+        };
 
-    onMounted(() => {
-      // Asegúrate de llamar a cargarSesiones dentro de onMounted para que se cargue al inicializar el componente
-      cargarSesiones();
-    });
+        onMounted(() => {
+            cargarSesiones();
+        });
 
-    return {
-      // ... devolver todas las propiedades y métodos que se necesitan en la plantilla
-      sesiones,
-    };
-  },
+        return {
+            sesiones,
+        };
+    },
 };
 </script>
 
@@ -193,13 +201,16 @@ body {
     justify-content: center;
 }
 
+.row > .contenedor-asiento {
+    width: auto; /* o puedes definir un ancho específico si es necesario */
+}
+
 .seat {
     margin: 5px;
     height: 40px;
     width: 40px;
     border-radius: 5px;
     transition: transform 0.3s;
-    background-color: #C09057;
 }
 
 .seat-wrapper {
@@ -247,8 +258,9 @@ body {
     fill: #2FDD92;
 }
 
-.contenedor-asiento.seleccionado, .contenedor-asiento .selected { 
-    background-color: #2FDD92; 
+.contenedor-asiento.seleccionado,
+.contenedor-asiento .selected {
+    background-color: #2FDD92;
 }
 
 .showcase {

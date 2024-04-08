@@ -4,6 +4,7 @@ import Obras from '../views/ObrasView.vue';
 import Intranet from '../views/IntranetView.vue';
 import ObrasIntranet from '../views/ObrasIntranetView.vue';
 import Reservas from '../components/Reservas.vue';
+import ReservasComponente from '../components/Reservas.vue';
 import Perfil from '../views/PerfilView.vue';
 import DetallesObraView from '../views/DetallesObraView.vue';
 import UsuarioView from '../views/UsuarioIntranetView.vue';

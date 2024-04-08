@@ -6,7 +6,7 @@
             <p class="obra-price">Precio: ${{ obra.price }}</p>
             <p class="obra-duration">Duración: {{ obra.duration }}</p>
             <div class="buttons-container">
-                <router-link :to="{ name: 'Reservas', params: { idObra: obra.idPlay } }">Reservar</router-link>
+                <router-link :to="{ name: 'Reservas', params: { idObra: obra.idPlay, nombre: obra.name } }" class="btn-volver">Reservar</router-link>
 
                 <router-link to="/obras" class="btn-volver">Volver a las obras</router-link>
             </div>

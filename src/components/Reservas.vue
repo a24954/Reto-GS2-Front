@@ -5,6 +5,11 @@
         </div>
         <div class="obras-container">
             <h2>Reserva para la obra {{ selectedObraName }}</h2>
+            <select v-model="sesionEscogida.idPlay">
+                <option v-for="obra in sesiones" :value="obra?.idPlay" :key="obra?.idPlay">
+                    {{ obra?.sesionTime }}
+                </option>
+            </select>
         </div>
         <ul class="showcase">
             <li>
@@ -58,16 +63,11 @@ import Svgbutaca from './Svgbutaca.vue'
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ObrasService } from '../services/ObrasService';
+import sessionService from '@/services/sessionService';
+import type { Session } from '@/services/sessionService';
+import type { Obra } from '@/services/ObrasService';
 import { nextTick } from 'vue';
 import type { Reservation, ReservedSeatsResponse } from '../services/ObrasService';
-
-ObrasService.getObra
-
-interface Obra {
-    idPlay: number;
-    nombre: string;
-    precio: number;
-}
 
 interface Seat {
     status: string;
@@ -78,6 +78,56 @@ interface Seat {
 
 export default {
     name: 'ReservasComponente',
+    setup() {
+        const sesiones = ref<Session[]>([]);
+        const obra = ref<Obra>();
+        const sesionEscogida = ref({
+            idPlay: 0,
+            sesionTime: '',
+        });
+        const route = useRoute();
+
+        const cargarObras = async () => {
+            try {
+                const id = parseInt(route.params.idPlay as string);
+                const response = await ObrasService.getObra(id);
+                obra.value = response;
+                console.log(obra.value)
+            } catch (error) {
+                console.error('Error al cargar las obras:', error);
+            }
+        };
+
+        const cargarSesiones = async () => {
+            try {
+                const response = await sessionService.getSessions();
+                const sesionesDeObra = response.filter((sesion) => {
+                    console.log("--")
+                    console.log(sesion.obra!.name)
+                    console.log(obra.value?.name)
+                    console.log("--")
+                    return sesion.obra?.description == obra.value?.description;
+                });
+
+                console.log(sesionesDeObra)
+                // console.log(response)
+                sesiones.value = sesionesDeObra;
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        onMounted(async () => {
+            await cargarObras();
+            await cargarSesiones();
+        });
+
+        return {
+            sesiones,
+            sesionEscogida,
+            cargarSesiones
+        }
+    },
     components: {
         Svgbutaca,
     },
@@ -210,7 +260,7 @@ export default {
                 price: 20, // Precio fijo por asiento, esto podría variar
             }))
         );
-    }
+    },
 };
 </script>
 

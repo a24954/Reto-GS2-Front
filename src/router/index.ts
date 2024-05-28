@@ -44,7 +44,7 @@ const router = createRouter({
       component: SesionView,
     },
     {
-      path: '/reservas',
+      path: '/reservas/:idPlay',
       name: 'Reservas',
       component: Reservas,
       props: true

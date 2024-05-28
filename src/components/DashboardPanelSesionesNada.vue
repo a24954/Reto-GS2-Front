@@ -4,11 +4,11 @@
         <h1>Gestión de Sesiones</h1>
         <form @submit.prevent="crearSesion">
             <select v-model="nuevaSesion.idPlay">
-                <option v-for="obra in obras" :value="obra?.idPlay" :key="obra?.idPlay">
-                    {{ obra?.name }}
+                <option v-for="obra in obras" :value="obra.idPlay" :key="obra.idPlay">
+                    {{ obra.name }}
                 </option>
             </select>
-            <input v-model="nuevaSesion.sesionTime" type="datetime-local" placeholder="Fecha y hora de inicio">
+            <input v-model="nuevaSesion.sessionTime" type="datetime-local" placeholder="Fecha y hora de inicio">
             <button type="submit">Crear Sesión</button>
         </form>
         <div v-for="sesion in sesiones" :key="sesion.idSesion" class="sesion-item">
@@ -22,9 +22,31 @@
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import sessionService from '@/services/sessionService';
-import { ObrasService } from '@/services/ObrasService';
-import type { Obra } from '@/services/ObrasService';
-import type { Session } from '@/services/sessionService';
+import { ObrasService } from '../services/ObrasService'
+
+interface Obra {
+    idPlay: number;
+    name: string;
+    photo: string;
+    price: number;
+    description: string;
+    duration: string;
+}
+
+interface Asiento {
+    idSeats: number;
+    number: string;
+    status: boolean;
+}
+
+interface Session {
+    idSesion?: number;
+    sesionTime: string;
+    idPlay: number;
+    asientos: Asiento[];
+    obra?: Obra;
+    precio?: number;
+}
 
 export default defineComponent({
     name: 'DashboardPanelSesiones',
@@ -33,57 +55,37 @@ export default defineComponent({
         const obras = ref<Obra[]>([]);
         const nuevaSesion = ref({
             idPlay: 0,
-            sesionTime: '',  
+            sessionTime: '',
         });
 
         const cargarSesiones = async () => {
             try {
                 const response = await sessionService.getSessions();
-                sesiones.value = response;
+                /*sesiones.value = response.map(sesionDto => ({
+                    idSesion: sesionDto.idSesion || undefined, 
+                    obra: sesionDto.obra,
+                    asientos: sesionDto.asientos.map(asiento => ({
+                        idSeats: asiento.idSeats,
+                        number: asiento.number,
+                        status: asiento.status
+                    })),
+                }));*/
             } catch (error) {
                 console.error(error);
             }
         };
 
-        const cargarObras = async () => {
-            try {
-                const response = await ObrasService.getObras();
-                obras.value = response;
-            } catch (error) {
-                console.error('Error al cargar las obras:', error);
-            }
-        };
-
         const crearSesion = async () => {
-            if (nuevaSesion.value.idPlay && nuevaSesion.value.sesionTime) {
+            if (nuevaSesion.value.idPlay && nuevaSesion.value.sessionTime) {
                 try {
-                    const sesionACrear: Omit<Session, 'idSesion'> = {
+                    const sesionACrear = {
                         idPlay: nuevaSesion.value.idPlay,
-                        sesionTime: nuevaSesion.value.sesionTime,
-                        asientos: [] 
+                        sessionTime: nuevaSesion.value.sessionTime,
                     };
-                    const sesionCreada = await sessionService.createSession(sesionACrear);
-                    sesiones.value.push(sesionCreada);
-                    nuevaSesion.value = {
-                        idPlay: 0,
-                        sesionTime: ''
-                    };
-                } catch (error) {
-                    console.error(error);
-                }
-            }
-        };
-
-        const eliminarSesion = async (idSesion?: number) => {
-            if (typeof idSesion === 'number') {
-                try {
-                    await sessionService.deleteSession(idSesion);
                     await cargarSesiones();
                 } catch (error) {
                     console.error(error);
                 }
-            } else {
-                console.error('El ID de la sesión es undefined');
             }
         };
 
@@ -92,6 +94,27 @@ export default defineComponent({
             await cargarSesiones();
         });
 
+        const cargarObras = async () => {
+            try {
+            } catch (error) {
+                console.error('Error al cargar las obras:', error);
+            }
+        };
+
+        const eliminarSesion = async (idSesion?: number) => {
+            if (typeof idSesion === 'number') {
+                try {
+                    await sessionService.deleteSession(idSesion);
+                    cargarSesiones();
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                console.error('El ID de la sesión es undefined');
+            }
+        };
+
+        onMounted(cargarSesiones);
         return {
             sesiones,
             obras,

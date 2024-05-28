@@ -1,6 +1,4 @@
 import axios from 'axios';
-import { ref, onMounted, defineComponent } from 'vue';
-import sessionService from '@/services/sessionService';
 
 interface Obra {
     idPlay: number;
@@ -21,11 +19,10 @@ export interface Session {
     idSesion?: number;
     sesionTime: string;
     idPlay: number;
-    asientos: Asiento[];
+    asientos?: Asiento[];
     obra?: Obra;
-    precio?: number; 
+    precio?: number;
 }
-
 
 const BASE_URL = 'http://localhost:5224/Sesion';
 
@@ -48,6 +45,7 @@ const createSession = async (sessionData: Omit<Session, 'idSesion'>): Promise<Se
         throw error;
     }
 };
+
 const deleteSession = async (idSesion: number): Promise<void> => {
     try {
         await axios.delete(`${BASE_URL}/${idSesion}`);

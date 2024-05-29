@@ -36,7 +36,7 @@
         </div>
         <p class="text">
             Has seleccionado <span id="count">{{ selectedSeats.length }}</span> asientos para la obra <span
-                id="selectedObraName">{{ selectedObraName }}</span> por el precio de $<span id="total">{{ totalPrice
+                id="selectedObraName">{{ selectedObraName }}</span> por el precio de $<span id="total">{{ obra!.price * selectedSeats.length
                 }}</span>
         </p>
         <div class="button-container">
@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import Svgbutaca from './Svgbutaca.vue'
+import Svgbutaca from './Svgbutaca.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ObrasService } from '../services/ObrasService';
@@ -75,12 +75,20 @@ interface Seat {
     price: number;
 }
 
-
 export default {
     name: 'ReservasComponente',
-    setup() {
+    components: {
+        Svgbutaca,
+    },
+    props: {
+        obra: {
+            type: Object as () => Obra,
+            default: () => ({} as Obra)
+        }
+    },
+    setup(props) {
         const sesiones = ref<Session[]>([]);
-        const obra = ref<Obra>();
+        const obra = ref<Obra | null>(props.obra || null);
         const sesionEscogida = ref({
             idPlay: 0,
             sesionTime: '',
@@ -92,7 +100,7 @@ export default {
                 const id = parseInt(route.params.idPlay as string);
                 const response = await ObrasService.getObra(id);
                 obra.value = response;
-                console.log(obra.value)
+                updateSeatsWithObraPrice(response.price);
             } catch (error) {
                 console.error('Error al cargar las obras:', error);
             }
@@ -102,19 +110,21 @@ export default {
             try {
                 const response = await sessionService.getSessions();
                 const sesionesDeObra = response.filter((sesion) => {
-                    console.log("--")
-                    console.log(sesion.obra!.name)
-                    console.log(obra.value?.name)
-                    console.log("--")
-                    return sesion.obra?.description == obra.value?.description;
+                    return sesion.obra?.name === obra.value?.name;
                 });
 
-                console.log(sesionesDeObra)
-                // console.log(response)
                 sesiones.value = sesionesDeObra;
             } catch (error) {
                 console.error(error);
             }
+        };
+
+        const updateSeatsWithObraPrice = (obraPrice: number) => {
+            rows.value.forEach((row) => {
+                row.forEach((seat) => {
+                    seat.price = obraPrice;
+                });
+            });
         };
 
         onMounted(async () => {
@@ -122,57 +132,52 @@ export default {
             await cargarSesiones();
         });
 
+        const rows = ref<Array<Array<Seat>>>(Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })));
+
         return {
             sesiones,
+            obra,
             sesionEscogida,
-            cargarSesiones
-        }
+            cargarSesiones,
+            rows,
+        };
     },
-    components: {
-        Svgbutaca,
-    },
-    props: {
-        obra: Object
-    },
-
     data() {
         return {
             selectedObra: null as Obra | null,
             selectedSeats: [] as number[],
             selectedObraName: '',
-            totalPrice: 0,
-            rows: Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })),
+            reservationPrice: 0,
             showEmailPopup: false,
             email: '',
         };
     },
-
     methods: {
-        updateSeatsWithObraPrice: function (obraPrice: any) {
+        updateSeatsWithObraPrice(obraPrice: number) {
             this.rows.forEach((row, rowIndex) => {
-                row.forEach((_seat: any, seatIndex: number) => {
+                row.forEach((_seat, seatIndex) => {
                     this.rows[rowIndex][seatIndex].price = obraPrice;
                 });
             });
         },
 
-        toggleSeat: function (rowIndex: number, seatIndex: number) {
+        toggleSeat(rowIndex: number, seatIndex: number) {
             const seat = this.rows[rowIndex][seatIndex];
-            const selectedObraPrice = this.obra ? this.obra.precio : 0;
+            const selectedObraPrice = this.obra ? this.obra.price : 0;
 
             if (seat.status === 'selected') {
                 seat.status = 'seat';
-                this.totalPrice -= selectedObraPrice;
+                this.reservationPrice -= selectedObraPrice;
                 this.selectedSeats = this.selectedSeats.filter(s => s !== seat.number);
             } else {
                 seat.status = 'selected';
-                this.totalPrice += selectedObraPrice;
+                this.reservationPrice += selectedObraPrice;
                 this.selectedSeats.push(seat.number);
             }
         },
 
-        calculateTotalPrice() {
-            this.totalPrice = this.selectedSeats.reduce((total, seatNumber) => {
+        calculatereservationPrice() {
+            this.reservationPrice = this.selectedSeats.reduce((total, seatNumber) => {
                 let seat = this.findSeatByNumber(seatNumber);
                 return total + (seat ? seat.price : 0);
             }, 0);
@@ -190,15 +195,23 @@ export default {
         },
 
         async handleBuyButtonClick() {
-            if (!this.selectedObra) {
-                alert('No se ha seleccionado ninguna obra.');
-                return;
-            }
+//             {
+//   "idReservation": 50,
+//   "user_Email": "string",
+//   "reservationPrice": "string",
+//   "reservationDate": "2024-05-29T17:34:01.645Z",
+//   "idPlay": 2
+// }
+
+//hay que pasarle el seats. como un string "[]" para no complicarnos
+//hay que pasarle el idreservation pillando el numero maximo de todas las reservas
+////ya que no hay increment
 
             const reservationDetails: Reservation = {
-                obraId: this.selectedObra.idPlay, // Ahora estamos seguros de que idPlay no es undefined
+                obraId: this.obra!.idPlay,
                 seats: this.selectedSeats,
-                totalPrice: this.totalPrice,
+                reservationPrice: this.obra!.price * this.selectedSeats.length,
+                user_Email: "a@a",
                 reservedSeats: undefined
             };
 
@@ -206,7 +219,7 @@ export default {
                 const reservationResponse: ReservedSeatsResponse = await ObrasService.saveReservation(reservationDetails);
 
                 if (reservationResponse.reservedSeats) {
-                    this.rows = this.rows.map(row => row.map((seat: { number: any; }) => {
+                    this.rows = this.rows.map(row => row.map((seat) => {
                         if (reservationResponse.reservedSeats.includes(seat.number)) {
                             return { ...seat, status: 'occupied' };
                         }
@@ -217,7 +230,7 @@ export default {
                 }
 
                 this.selectedSeats = [];
-                this.totalPrice = 0;
+                this.reservationPrice = 0;
 
                 this.showPurchaseAlert();
             } catch (error) {
@@ -225,7 +238,6 @@ export default {
                 alert('Hubo un error al procesar tu reserva. Por favor, intenta de nuevo.');
             }
         },
-
 
         showPurchaseAlert() {
             const purchaseAlert = this.$refs.purchaseAlert as HTMLElement;
@@ -239,7 +251,7 @@ export default {
 
         handleResetButtonClick() {
             this.selectedSeats = [];
-            this.totalPrice = 0;
+            this.reservationPrice = 0;
             for (let row of this.rows) {
                 for (let seat of row) {
                     seat.status = 'seat';
@@ -251,18 +263,18 @@ export default {
             console.log('Email enviado a: ', this.email);
         }
     },
-
     mounted() {
         this.rows = this.rows.map((row, rowIndex) =>
-            row.map((_seat: number, seatIndex: number) => ({
+            row.map((_seat, seatIndex) => ({
                 status: 'seat',
-                number: rowIndex * this.rows[0].length + seatIndex + 1, // Ejemplo para generar un número único
-                price: 20, // Precio fijo por asiento, esto podría variar
+                number: rowIndex * this.rows[0].length + seatIndex + 1,
+                price: 20,
             }))
         );
     },
 };
 </script>
+
 
 <style scoped>
 * {

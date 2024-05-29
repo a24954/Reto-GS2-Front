@@ -15,7 +15,8 @@ export type Reservation = {
     reservedSeats: any;
     obraId: number;
     seats: number[];
-    totalPrice: number;
+    reservationPrice: number,
+    user_Email: string,
 };
 
 export type ReservedSeatsResponse = {

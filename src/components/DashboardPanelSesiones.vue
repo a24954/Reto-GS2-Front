@@ -59,7 +59,7 @@ export default defineComponent({
                 try {
                     const sesionACrear: Omit<Session, 'idSesion'> = {
                         idPlay: nuevaSesion.value.idPlay,
-                        sesionTime: nuevaSesion.value.sesionTime,
+                        sesionTime: formatDatetime(nuevaSesion.value.sesionTime),
                         asientos: [] 
                     };
                     const sesionCreada = await sessionService.createSession(sesionACrear);
@@ -86,6 +86,18 @@ export default defineComponent({
                 console.error('El ID de la sesión es undefined');
             }
         };
+
+        function formatDatetime(datetime: any): any {
+            if (!datetime) return '';
+
+            const date = new Date(datetime);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses son 0 indexados
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+
+            return `${day}/${month} ${hours}:${minutes}-${parseInt(hours)+1}:${minutes}`;
+            }
 
         onMounted(async () => {
             await cargarObras();

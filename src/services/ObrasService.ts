@@ -12,11 +12,12 @@ const BASE_URL = 'http://localhost:5224/Obra';
 const BASE_RESERVATION_URL = 'http://localhost:5224/Reserva';
 
 export type Reservation = {
-    reservedSeats: any;
-    obraId: number;
-    seats: number[];
-    reservationPrice: number,
+    idPlay: number,
+    reservationDate: any;
+    reservationPrice: string,
     user_Email: string,
+    listaSeats: string,
+    reservedSeats?: any;
 };
 
 export type ReservedSeatsResponse = {
@@ -42,6 +43,14 @@ export const ObrasService = {
         const data = await response.json();
         console.log(data);
         return data;
+    },
+
+    async getReservations(): Promise<Reservation[]> {
+        const response = await fetch(BASE_RESERVATION_URL);
+        if (!response.ok) {
+            throw new Error('Error al obtener las reservas');
+        }
+        return response.json();
     },
 
     async saveReservation(reservation: Reservation): Promise<Reservation> {

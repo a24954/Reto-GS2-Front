@@ -4,8 +4,8 @@
             ¡Compra realizada con éxito!
         </div>
         <div class="obras-container">
-            <h2>Reserva para la obra {{ selectedObraName }}</h2>
-            <select v-model="sesionEscogida.idPlay">
+            <h2>Reserva para la obra {{ obra?.name }}</h2>
+            <select v-model="sesionEscogida.idPlay" @change="onSesionChange">
                 <option v-for="obra in sesiones" :value="obra?.idPlay" :key="obra?.idPlay">
                     {{ obra?.sesionTime }}
                 </option>
@@ -27,17 +27,18 @@
         </ul>
         <div class="container">
             <div class="row" v-for="(row, rowIndex) in rows" :key="rowIndex">
-                <div v-for="(seat, seatIndex) in row" :key="seatIndex"
-                    :class="['contenedor-asiento', { 'seleccionado': seat.status === 'selected', 'ocupado': seat.status === 'occupied' }]"
-                    @click="toggleSeat(rowIndex, seatIndex)">
+                <div v-for="(seat, seatIndex) in row" :key="seatIndex" :class="[
+                    'contenedor-asiento',
+                    { seleccionado: seat.status === 'selected', ocupado: seat.status === 'occupied' }
+                ]" @click="toggleSeat(rowIndex, seatIndex)">
                     <Svgbutaca class="seat"></Svgbutaca>
                 </div>
             </div>
         </div>
         <p class="text">
             Has seleccionado <span id="count">{{ selectedSeats.length }}</span> asientos para la obra <span
-                id="selectedObraName">{{ selectedObraName }}</span> por el precio de $<span id="total">{{ obra!.price * selectedSeats.length
-                }}</span>
+                id="selectedObraName">{{ obra?.name }}</span> por el precio de $<span id="total">{{ obra!.price *
+                    selectedSeats.length }}</span>
         </p>
         <div class="button-container">
             <button id="buyButton" class="buy-button" @click="handleBuyButtonClick">Comprar ahora</button>
@@ -46,7 +47,7 @@
             </div>
             <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
             <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
-            <button><router-link to="/obras" class="btn-volver, reset-button">Volver a las obras</router-link></button>
+            <button><router-link to="/obras" class="btn-volver reset-button">Volver a las obras</router-link></button>
         </div>
         <div id="emailPopup" class="email-popup" v-show="showEmailPopup">
             <div class="email-popup-content">
@@ -66,7 +67,6 @@ import { ObrasService } from '../services/ObrasService';
 import sessionService from '@/services/sessionService';
 import type { Session } from '@/services/sessionService';
 import type { Obra } from '@/services/ObrasService';
-import { nextTick } from 'vue';
 import type { Reservation, ReservedSeatsResponse } from '../services/ObrasService';
 
 interface Seat {
@@ -94,6 +94,8 @@ export default {
             sesionTime: '',
         });
         const route = useRoute();
+        const rows = ref<Array<Array<Seat>>>(Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })));
+        const selectedSeats = ref<number[]>([]);
 
         const cargarObras = async () => {
             try {
@@ -119,6 +121,15 @@ export default {
             }
         };
 
+        const cargarReservas = async () => {
+            try {
+                const reservations = await ObrasService.getReservations();
+                updateOccupiedSeats(reservations);
+            } catch (error) {
+                console.error('Error al cargar las reservas:', error);
+            }
+        };
+
         const updateSeatsWithObraPrice = (obraPrice: number) => {
             rows.value.forEach((row) => {
                 row.forEach((seat) => {
@@ -127,26 +138,47 @@ export default {
             });
         };
 
+        const updateOccupiedSeats = (reservations: Reservation[]) => {
+            rows.value.forEach((row) => {
+                row.forEach((seat) => {
+                    const isOccupied = reservations.some(
+                        reservation => {
+                            try {
+                                const seatList = JSON.parse(reservation.listaSeats.replace(/'/g, '"'));
+                                return reservation.idPlay === obra.value?.idPlay && seatList.includes(seat.number.toString());
+                            } catch (e) {
+                                console.error('Error parsing listaSeats:', reservation.listaSeats, e);
+                                return false;
+                            }
+                        }
+                    );
+                    if (isOccupied) {
+                        seat.status = 'occupied';
+                    }
+                });
+            });
+        };
+
+
         onMounted(async () => {
             await cargarObras();
             await cargarSesiones();
+            await cargarReservas();
         });
-
-        const rows = ref<Array<Array<Seat>>>(Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })));
 
         return {
             sesiones,
             obra,
             sesionEscogida,
+            updateOccupiedSeats,
             cargarSesiones,
             rows,
+            selectedSeats,
         };
     },
     data() {
         return {
             selectedObra: null as Obra | null,
-            selectedSeats: [] as number[],
-            selectedObraName: '',
             reservationPrice: 0,
             showEmailPopup: false,
             email: '',
@@ -169,74 +201,50 @@ export default {
                 seat.status = 'seat';
                 this.reservationPrice -= selectedObraPrice;
                 this.selectedSeats = this.selectedSeats.filter(s => s !== seat.number);
-            } else {
+            } else if (seat.status !== 'occupied') {
                 seat.status = 'selected';
                 this.reservationPrice += selectedObraPrice;
                 this.selectedSeats.push(seat.number);
             }
         },
 
-        calculatereservationPrice() {
-            this.reservationPrice = this.selectedSeats.reduce((total, seatNumber) => {
-                let seat = this.findSeatByNumber(seatNumber);
-                return total + (seat ? seat.price : 0);
-            }, 0);
-        },
-
-        findSeatByNumber(seatNumber: number) {
-            for (let row of this.rows) {
-                for (let seat of row) {
-                    if (seat.number === seatNumber) {
-                        return seat;
-                    }
-                }
-            }
-            return null;
+        onSesionChange(event: Event) {
+            const selectedIdPlay = (event.target as HTMLSelectElement).value;
+            this.sesionEscogida.idPlay = Number(selectedIdPlay);
         },
 
         async handleBuyButtonClick() {
-//             {
-//   "idReservation": 50,
-//   "user_Email": "string",
-//   "reservationPrice": "string",
-//   "reservationDate": "2024-05-29T17:34:01.645Z",
-//   "idPlay": 2
-// }
+            const currentUserStr = localStorage.getItem("currentUser");
 
-//hay que pasarle el seats. como un string "[]" para no complicarnos
-//hay que pasarle el idreservation pillando el numero maximo de todas las reservas
-////ya que no hay increment
+            if (currentUserStr) {
+                const currentUser = JSON.parse(currentUserStr);
 
-            const reservationDetails: Reservation = {
-                obraId: this.obra!.idPlay,
-                seats: this.selectedSeats,
-                reservationPrice: this.obra!.price * this.selectedSeats.length,
-                user_Email: "a@a",
-                reservedSeats: undefined
-            };
+                const email = currentUser.email;
 
-            try {
-                const reservationResponse: ReservedSeatsResponse = await ObrasService.saveReservation(reservationDetails);
+                const reservationDetails: Reservation = {
+                    idPlay: this.obra!.idPlay,
+                    reservationPrice: (this.obra!.price * this.selectedSeats.length).toString(),
+                    user_Email: email,
+                    reservationDate: new Date().toISOString(),
+                    listaSeats: "[" + this.selectedSeats.map(seat => `'${seat}'`).join(", ") + "]",
+                };
 
-                if (reservationResponse.reservedSeats) {
-                    this.rows = this.rows.map(row => row.map((seat) => {
-                        if (reservationResponse.reservedSeats.includes(seat.number)) {
-                            return { ...seat, status: 'occupied' };
-                        }
-                        return seat;
-                    }));
-                } else {
-                    console.error('La propiedad reservedSeats no está en la respuesta');
+                try {
+                    await ObrasService.saveReservation(reservationDetails);
+
+                    this.selectedSeats = [];
+                    this.reservationPrice = 0;
+
+                    this.showPurchaseAlert();
+                } catch (error) {
+                    console.error('Hubo un error al guardar la reserva:', error);
+                    alert('Hubo un error al procesar tu reserva. Por favor, intenta de nuevo.');
                 }
-
-                this.selectedSeats = [];
-                this.reservationPrice = 0;
-
-                this.showPurchaseAlert();
-            } catch (error) {
-                console.error('Hubo un error al guardar la reserva:', error);
-                alert('Hubo un error al procesar tu reserva. Por favor, intenta de nuevo.');
+            } else {
+                alert('No has iniciado sesión.');
             }
+
+
         },
 
         showPurchaseAlert() {
@@ -254,7 +262,9 @@ export default {
             this.reservationPrice = 0;
             for (let row of this.rows) {
                 for (let seat of row) {
-                    seat.status = 'seat';
+                    if (seat.status !== 'occupied') {
+                        seat.status = 'seat';
+                    }
                 }
             }
         },
@@ -274,7 +284,6 @@ export default {
     },
 };
 </script>
-
 
 <style scoped>
 * {
@@ -385,6 +394,10 @@ body {
 .contenedor-asiento.seleccionado,
 .contenedor-asiento .selected {
     background-color: #2FDD92;
+}
+
+.contenedor-asiento.ocupado {
+    background-color: #D9534F;
 }
 
 .showcase {

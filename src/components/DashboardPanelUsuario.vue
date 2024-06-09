@@ -8,10 +8,9 @@
             <input v-model="nuevoUsuario.password" type="password" placeholder="Contraseña">
             <button type="submit">Crear Usuario</button>
         </form>
-        <div v-for="usuario in usuarios" :key="usuario.idUser" class="usuario-item">
+        <div v-for="usuario in usuarios" :key="usuario.id" class="usuario-item">
             <p>Nombre: {{ usuario.nombre }}</p>
             <p>Email: {{ usuario.email }}</p>
-            <p>Contraseña: {{ usuario.password }}</p>
             <button @click="handleEliminarUsuario(usuario)">Eliminar</button>
         </div>
     </div>
@@ -19,10 +18,10 @@
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
-import { userService } from '@/services/UserService';
+import { useUserStore } from '@/stores/userStore';
 
 interface Usuario {
-    idUser?: number;
+    id?: number;
     nombre: string;
     email: string;
     password: string;
@@ -31,70 +30,43 @@ interface Usuario {
 export default {
     name: 'DashboardPanelUsuarios',
     setup() {
-        const usuarios = ref<Usuario[]>([]);
-        const nuevoUsuario = ref<Omit<Usuario, 'idUser'>>({ nombre: '', email: '', password: '' });
+        const userStore = useUserStore();
+        const nuevoUsuario = ref<Omit<Usuario, 'id'>>({ nombre: '', email: '', password: '' });
 
         const cargarUsuarios = async () => {
-            try {
-                usuarios.value = await userService.getUsers();
-                console.log(usuarios.value); 
-            } catch (error) {
-                console.error('Error al cargar los usuarios:', error);
-            }
-        };
-        const crearUsuario = async () => {
-            try {
-                const formattedUserData = {
-                    UserName: nuevoUsuario.value.nombre,
-                    Email: nuevoUsuario.value.email,
-                    Password: nuevoUsuario.value.password,
-                    Rol: 2
-                };
-                const usuarioCreado = await userService.createUser(formattedUserData);
-                if (usuarioCreado.idUser) {
-                    usuarios.value.push(usuarioCreado);
-                    nuevoUsuario.value = { nombre: '', email: '', password: '' };
-                }
-            } catch (error) {
-                console.error('Error al crear el usuario:', error);
-            }
+            await userStore.fetchUsers();
         };
 
-        const editarUsuario = async (usuario: Usuario) => {
+        const crearUsuario = async () => {
+            const formattedUserData = {
+                nombre: nuevoUsuario.value.nombre,
+                email: nuevoUsuario.value.email,
+                password: nuevoUsuario.value.password,
+            };
+            await userStore.createUser(formattedUserData);
+            nuevoUsuario.value = { nombre: '', email: '', password: '' };
         };
 
         const handleEliminarUsuario = async (usuario: Usuario) => {
-            if (usuario.idUser === undefined) {
+            if (usuario.id === undefined) {
                 console.error('No se puede eliminar un usuario sin ID.');
                 return;
             }
-            await eliminarUsuario(usuario.idUser);
-        };
-
-        const eliminarUsuario = async (idUser: number) => {
-            try {
-                await userService.deleteUser(idUser);
-                usuarios.value = usuarios.value.filter(u => u.idUser !== idUser);
-            } catch (error) {
-                console.error('Error al eliminar el usuario:', error);
-            }
+            await userStore.deleteUser(usuario.id);
         };
 
         onMounted(cargarUsuarios);
 
         return {
-            usuarios,
+            usuarios: userStore.usuarios,
             nuevoUsuario,
             cargarUsuarios,
             crearUsuario,
-            editarUsuario,
-            eliminarUsuario,
             handleEliminarUsuario,
         };
     },
 };
 </script>
-
 
 <style scoped>
 :root {

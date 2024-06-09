@@ -3,17 +3,33 @@
         <Navbar />
         <div class="obras-container">
             <h1 class="ejemplo">OBRAS</h1>
+            <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Buscar obras por nombre..."
+                class="search-input"
+            />
             <div v-if="error" class="error-message">
                 Error cargando las obras: {{ error }}
             </div>
             <div v-else class="obras-grid">
-                <div v-for="obra in obras" :key="obra?.idPlay" class="obra">
-                    <img :src="obra?.photo" alt="Foto de la obra" class="obra-photo" />
+                <div
+                    v-for="obra in filteredObras"
+                    :key="obra?.idPlay"
+                    class="obra"
+                >
+                    <img
+                        :src="obra?.photo"
+                        alt="Foto de la obra"
+                        class="obra-photo"
+                    />
                     <div class="obra-info">
                         <h3>{{ obra?.name }}</h3>
                         <h3>{{ obra?.description }}</h3>
                         <button class="details-button">
-                            <router-link :to="{ name: 'DetallesObra', params: { idPlay: obra?.idPlay.toString() } }">
+                            <router-link
+                                :to="{ name: 'DetallesObra', params: { idPlay: obra?.idPlay.toString() } }"
+                            >
                                 Ver detalles
                             </router-link>
                         </button>
@@ -25,8 +41,9 @@
     </div>
 </template>
 
+
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
 import { ObrasService } from '../services/ObrasService';
 import type { Obra } from '../services/ObrasService';
 import Navbar from '../components/Navbar.vue';
@@ -41,6 +58,7 @@ export default defineComponent({
     setup() {
         const obras = ref<Obra[]>([]);
         const error = ref<string | null>(null);
+        const searchQuery = ref<string>('');
 
         const loadObras = async () => {
             try {
@@ -53,10 +71,20 @@ export default defineComponent({
 
         onMounted(loadObras);
 
-        return { obras, error };
+        const filteredObras = computed(() => {
+            if (!searchQuery.value) {
+                return obras.value;
+            }
+            return obras.value.filter((obra) =>
+                obra.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            );
+        });
+
+        return { obras, error, searchQuery, filteredObras };
     }
 });
 </script>
+
 
 <style scoped>
 .ejemplo {
@@ -66,6 +94,17 @@ export default defineComponent({
     align-items: center;
     border: 3px solid black;
     background-color: #C09057;
+}
+
+.search-input {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
 }
 
 .obras-container {
@@ -105,7 +144,6 @@ export default defineComponent({
     margin: auto;
     display: block;
 }
-
 
 .obra-info {
     display: flex;
@@ -155,3 +193,4 @@ export default defineComponent({
     }
 }
 </style>
+

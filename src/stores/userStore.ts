@@ -6,6 +6,7 @@ export type Usuario = {
     id: number;
     nombre: string;
     email: string;
+    password: string; // Añadir esta línea
 };
 
 export const useUserStore = defineStore('user', {
@@ -16,7 +17,7 @@ export const useUserStore = defineStore('user', {
     actions: {
         async fetchUsers() {
             try {
-                const response = await fetch(`${API_URL}`);
+                const response = await fetch(API_URL);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -27,7 +28,7 @@ export const useUserStore = defineStore('user', {
         },
         async createUser(userData: any) {
             try {
-                const response = await fetch(`${API_URL}`, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

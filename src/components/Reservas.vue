@@ -5,11 +5,6 @@
         </div>
         <div class="obras-container">
             <h2>Reserva para la obra {{ obra?.name }}</h2>
-            <select v-model="sesionEscogida.idPlay" @change="onSesionChange">
-                <option v-for="obra in sesiones" :value="obra?.idPlay" :key="obra?.idPlay">
-                    {{ obra?.sesionTime }}
-                </option>
-            </select>
         </div>
         <ul class="showcase">
             <li>
@@ -45,7 +40,6 @@
             <div class="alert" ref="purchaseAlert" style="display:none;">
                 ¡Compra realizada con éxito!
             </div>
-            <a href="mireserva.html" class="view-reservations-button">Mis Reservas</a>
             <button id="resetButton" class="reset-button" @click="handleResetButtonClick">Eliminar Reserva</button>
             <button><router-link to="/obras" class="btn-volver reset-button">Volver a las obras</router-link></button>
         </div>
@@ -67,7 +61,8 @@ import { ObrasService } from '../services/ObrasService';
 import sessionService from '@/services/sessionService';
 import type { Session } from '@/services/sessionService';
 import type { Obra } from '@/services/ObrasService';
-import type { Reservation, ReservedSeatsResponse } from '../services/ObrasService';
+import type { Reservation } from '../services/ObrasService';
+import Swal from 'sweetalert2';
 
 interface Seat {
     status: string;
@@ -159,6 +154,17 @@ export default {
             });
         };
 
+        const handleBuyButtonClick = () => {
+            const obraName = obra.value?.name || 'Obra desconocida';
+            const seatNumbers = selectedSeats.value.join(', ');
+
+            Swal.fire({
+                title: 'Compra realizada',
+                text: `Has reservado la obra ${obraName} con los asientos: ${seatNumbers}`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        };
 
         onMounted(async () => {
             await cargarObras();
@@ -174,6 +180,7 @@ export default {
             cargarSesiones,
             rows,
             selectedSeats,
+            handleBuyButtonClick
         };
     },
     data() {
@@ -214,6 +221,16 @@ export default {
         },
 
         async handleBuyButtonClick() {
+            const obraName = this.obra?.name || 'Obra desconocida';
+            const seatNumbers = this.selectedSeats.join(', ');
+
+            Swal.fire({
+                title: 'Compra realizada',
+                text: `Has reservado la obra ${obraName} con los asientos: ${seatNumbers}`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
             const currentUserStr = localStorage.getItem("currentUser");
 
             if (currentUserStr) {
@@ -243,8 +260,6 @@ export default {
             } else {
                 alert('No has iniciado sesión.');
             }
-
-
         },
 
         showPurchaseAlert() {
@@ -284,7 +299,6 @@ export default {
     },
 };
 </script>
-
 <style scoped>
 * {
     box-sizing: border-box;

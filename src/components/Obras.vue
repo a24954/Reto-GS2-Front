@@ -4,17 +4,25 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
-import { ObrasService } from '../services/ObrasService';
+import { useObraStore } from '../services/ObrasService';
 import type { Obra } from '../services/ObrasService';
 
 export default defineComponent({
     name: 'Obras',
-    setup() {
-        const obras = ref<Obra[]>([]);
+    props: {
+        obra: {
+            type: Object as () => Obra,
+            default: () => ({} as Obra)
+        }
+    },
+    setup(props) {
+        const obras = ref<Obra | null>(props.obra || null);
         const error = ref<string | null>(null);
         const loadObras = async () => {
             try {
-                obras.value = await ObrasService.getObras();
+                const obraStore = useObraStore();
+                const response: any = await obraStore.fetchObras();
+                obras.value = response;
             } catch (e) {
                 const err = e as Error;
                 error.value = err.message;

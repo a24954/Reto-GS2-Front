@@ -1,6 +1,8 @@
-import axios from 'axios';
+import { defineStore } from 'pinia';
 
-interface Obra {
+const BASE_URL = 'http://localhost:5224/Sesion';
+
+export interface Obra {
     idPlay: number;
     name: string;
     photo: string;
@@ -9,7 +11,7 @@ interface Obra {
     duration: string;
 }
 
-interface Asiento {
+export interface Asiento {
     idSeats: number;
     number: string;
     status: boolean;
@@ -24,39 +26,68 @@ export interface Session {
     precio?: number;
 }
 
-const BASE_URL = 'http://localhost:5224/Sesion';
+export const useSessionStore = defineStore('session', {
+    state: () => ({
+        sessions: [] as Session[],
+        error: null as string | null,
+    }),
+    actions: {
+        async fetchSessions(): Promise<Session[]> {
+            try {
+                const response = await fetch(BASE_URL);
+                if (!response.ok) {
+                    throw new Error('Error al obtener las sesiones');
+                }
+                this.sessions = await response.json();
+                return this.sessions
+            } catch (error: any) {
+                this.handleError(error);
+                return []
+            }
+        },
+        async getSession(id: number) {
+            const response = await fetch(`${BASE_URL}/${id}`);
+            if (!response.ok) {
+                throw new Error('Error al obtener la sesion');
+            }
+            const data = await response.json();
+            console.log(data);
+            return data;
+        },
+        async createSession(sessionData: Omit<Session, 'idSesion'>): Promise<Session | undefined> {
+            try {
+                const response = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sessionData),
+                });
+                if (!response.ok) {
+                    throw new Error('Error al crear la sesión');
+                }
+                const newSession = await response.json();
+                this.sessions.push(newSession);
+                return newSession;
+            } catch (error: any) {
+                this.handleError(error);
+                return undefined;
+            }
+        },
+        async deleteSession(idSesion: number) {
+            try {
+                await fetch(`${BASE_URL}/${idSesion}`, {
+                    method: 'DELETE',
+                });
+                this.sessions = this.sessions.filter(session => session.idSesion !== idSesion);
+            } catch (error: any) {
+                this.handleError(error);
+            }
+        },
+        handleError(error: any) {
+            this.error = error.message || 'An unknown error occurred.';
+        },
+    },
+});
 
-const getSessions = async (): Promise<Session[]> => {
-    try {
-        const response = await axios.get(BASE_URL);
-        return response.data;
-    } catch (error) {
-        console.error('Error al obtener las sesiones', error);
-        throw error;
-    }
-};
-
-const createSession = async (sessionData: Omit<Session, 'idSesion'>): Promise<Session> => {
-    try {
-        const response = await axios.post(BASE_URL, sessionData);
-        return response.data;
-    } catch (error) {
-        console.error('Error al crear la sesión', error);
-        throw error;
-    }
-};
-
-const deleteSession = async (idSesion: number): Promise<void> => {
-    try {
-        await axios.delete(`${BASE_URL}/${idSesion}`);
-    } catch (error) {
-        console.error('Error al eliminar la sesión', error);
-        throw error;
-    }
-};
-
-export default {
-    getSessions,
-    createSession,
-    deleteSession,
-};
+export default useSessionStore;

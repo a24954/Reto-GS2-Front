@@ -2,36 +2,24 @@
     <div>
         <Navbar />
         <div class="obras-container">
-            <h1 class="ejemplo">OBRAS</h1>
-            <input
-                type="text"
-                v-model="searchQuery"
-                placeholder="Buscar obras por nombre..."
-                class="search-input"
-            />
+            <h1 class="ejemplo">SESIONES DE OBRAS</h1>
+            <input type="text" v-model="searchQuery" placeholder="Buscar obras por nombre..." class="search-input" />
             <div v-if="error" class="error-message">
                 Error cargando las obras: {{ error }}
             </div>
             <div v-else class="obras-grid">
-                <div
-                    v-for="obra in filteredObras"
-                    :key="obra?.idPlay"
-                    class="obra"
-                >
-                    <img
-                        :src="obra?.photo"
-                        alt="Foto de la obra"
-                        class="obra-photo"
-                    />
+                <div v-for="obra in filteredObras" :key="obra?.obra.idPlay" class="obra">
+                    <img :src="obra?.obra.photo" alt="Foto de la obra" class="obra-photo" />
                     <div class="obra-info">
-                        <h3>{{ obra?.name }}</h3>
-                        <h3>{{ obra?.description }}</h3>
+                        <h3>{{ obra?.obra.name }}</h3>
+                        <h3>{{ obra?.obra.description }}</h3>
+                        <h3>{{ obra?.sesionTime }}</h3>
                         <button class="details-button">
                             <router-link
-                                :to="{ name: 'DetallesObra', params: { idPlay: obra?.idPlay.toString() } }"
-                            >
+                                :to="{ name: 'DetallesObra', params: { idPlay: obra?.obra.idPlay.toString(), idSesion: obra?.idSesion.toString() } }">
                                 Ver detalles
                             </router-link>
+
                         </button>
                     </div>
                 </div>
@@ -44,10 +32,11 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from 'vue';
-import { ObrasService } from '../services/ObrasService';
-import type { Obra } from '../services/ObrasService';
+import { useObraStore } from '../services/ObrasService';
+import type { ObraSesion } from '../services/ObrasService';
 import Navbar from '../components/Navbar.vue';
 import Footera from '../components/Footer.vue';
+import useSessionStore from '@/services/sessionService';
 
 export default defineComponent({
     name: 'ObrasView',
@@ -56,13 +45,15 @@ export default defineComponent({
         Footera,
     },
     setup() {
-        const obras = ref<Obra[]>([]);
+        const obras = ref<ObraSesion[]>([]);
         const error = ref<string | null>(null);
         const searchQuery = ref<string>('');
 
         const loadObras = async () => {
             try {
-                obras.value = await ObrasService.getObras();
+                const sessionStore = useSessionStore();
+                const response: any = await sessionStore.fetchSessions();
+                obras.value = response;
             } catch (e) {
                 const err = e as Error;
                 error.value = err.message;
@@ -76,7 +67,7 @@ export default defineComponent({
                 return obras.value;
             }
             return obras.value.filter((obra) =>
-                obra.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+                obra.obra.name.toLowerCase().includes(searchQuery.value.toLowerCase())
             );
         });
 
@@ -193,4 +184,3 @@ export default defineComponent({
     }
 }
 </style>
-

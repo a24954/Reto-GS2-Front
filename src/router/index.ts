@@ -44,7 +44,7 @@ const router = createRouter({
       component: SesionView,
     },
     {
-      path: '/reservas/:idPlay',
+      path: '/reservas/:idPlay/:idSesion',
       name: 'Reservas',
       component: Reservas,
       props: true
@@ -55,7 +55,7 @@ const router = createRouter({
       component: Perfil
     },
     {
-      path: '/detalles-obra/:idPlay',
+      path: '/detalles-obra/:idPlay/:idSesion',
       name: 'DetallesObra',
       component: DetallesObraView,
       props: true

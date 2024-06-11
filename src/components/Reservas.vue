@@ -57,8 +57,8 @@
 import Svgbutaca from './Svgbutaca.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { ObrasService } from '../services/ObrasService';
-import sessionService from '@/services/sessionService';
+import { useObraStore } from '../services/ObrasService';
+import { useSessionStore } from '@/services/sessionService';
 import type { Session } from '@/services/sessionService';
 import type { Obra } from '@/services/ObrasService';
 import type { Reservation } from '../services/ObrasService';
@@ -79,23 +79,31 @@ export default {
         obra: {
             type: Object as () => Obra,
             default: () => ({} as Obra)
+        },
+        session: {
+            type: Object as () => Session,
+            default: () => ({} as Session)
         }
     },
     setup(props) {
-        const sesiones = ref<Session[]>([]);
+        const sessionStore = useSessionStore();
         const obra = ref<Obra | null>(props.obra || null);
+        const sesion = ref<Session | null>(props.session || null);
         const sesionEscogida = ref({
             idPlay: 0,
             sesionTime: '',
         });
+        let idSesionRouter = 0;
         const route = useRoute();
         const rows = ref<Array<Array<Seat>>>(Array(6).fill(Array(8).fill({ status: 'seat', number: 0, price: 0 })));
         const selectedSeats = ref<number[]>([]);
+        const idReservaRoute = ref<number>();
 
         const cargarObras = async () => {
             try {
                 const id = parseInt(route.params.idPlay as string);
-                const response = await ObrasService.getObra(id);
+                const obraStore = useObraStore();
+                const response = await obraStore.getObra(id);
                 obra.value = response;
                 updateSeatsWithObraPrice(response.price);
             } catch (error) {
@@ -105,20 +113,21 @@ export default {
 
         const cargarSesiones = async () => {
             try {
-                const response = await sessionService.getSessions();
-                const sesionesDeObra = response.filter((sesion) => {
-                    return sesion.obra?.name === obra.value?.name;
-                });
-
-                sesiones.value = sesionesDeObra;
+                const id = parseInt(route.params.idSesion as string);
+                const sessionStore = useSessionStore();
+                const response = await sessionStore.getSession(id);
+                sesion.value = response;
+                updateSeatsWithObraPrice(response.price);
             } catch (error) {
-                console.error(error);
+                console.error('Error al cargar las sesiones:', error);
             }
         };
 
         const cargarReservas = async () => {
             try {
-                const reservations = await ObrasService.getReservations();
+                idReservaRoute.value = parseInt(route.params.idSesion as string);
+                const obraStore = useObraStore();
+                const reservations = await obraStore.fetchReservations(idReservaRoute.value);
                 updateOccupiedSeats(reservations);
             } catch (error) {
                 console.error('Error al cargar las reservas:', error);
@@ -140,7 +149,7 @@ export default {
                         reservation => {
                             try {
                                 const seatList = JSON.parse(reservation.listaSeats.replace(/'/g, '"'));
-                                return reservation.idPlay === obra.value?.idPlay && seatList.includes(seat.number.toString());
+                                return reservation.idSesion === idReservaRoute.value && seatList.includes(seat.number.toString());
                             } catch (e) {
                                 console.error('Error parsing listaSeats:', reservation.listaSeats, e);
                                 return false;
@@ -153,6 +162,7 @@ export default {
                 });
             });
         };
+
 
         const handleBuyButtonClick = () => {
             const obraName = obra.value?.name || 'Obra desconocida';
@@ -173,14 +183,15 @@ export default {
         });
 
         return {
-            sesiones,
+            sessionStore,
             obra,
+            sesion,
             sesionEscogida,
             updateOccupiedSeats,
-            cargarSesiones,
             rows,
             selectedSeats,
-            handleBuyButtonClick
+            handleBuyButtonClick,
+            idReservaRoute
         };
     },
     data() {
@@ -239,7 +250,7 @@ export default {
                 const email = currentUser.email;
 
                 const reservationDetails: Reservation = {
-                    idPlay: this.obra!.idPlay,
+                    idSesion: this.idReservaRoute!,
                     reservationPrice: (this.obra!.price * this.selectedSeats.length).toString(),
                     user_Email: email,
                     reservationDate: new Date().toISOString(),
@@ -247,7 +258,8 @@ export default {
                 };
 
                 try {
-                    await ObrasService.saveReservation(reservationDetails);
+                    const obraStore = useObraStore();
+                    await obraStore.saveReservation(reservationDetails);
 
                     this.selectedSeats = [];
                     this.reservationPrice = 0;
@@ -299,6 +311,7 @@ export default {
     },
 };
 </script>
+
 <style scoped>
 * {
     box-sizing: border-box;

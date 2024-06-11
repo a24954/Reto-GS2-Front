@@ -12,29 +12,28 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
 import { defineComponent } from 'vue';
-import { login, getCurrentUser } from '@/services/authService';
-import type { LoginResponse } from '@/services/authService';
-import { login as loginUser } from '@/services/authService';
-import { UserRole, type User } from '@/services/authService';
+import { useAuth } from '@/services/useAuth';
 
 export default defineComponent({
+    setup() {
+        const { login, isLoggedIn } = useAuth();
+        return {
+            login,
+            isLoggedIn,
+        };
+    },
     data() {
         return {
             userData: {
                 name: '',
-                email: '',
                 password: '',
-                rol: 2,
             },
             error: false,
             errorMessage: '',
         };
     },
-
     methods: {
-
         async login() {
             if (this.validateForm()) {
                 try {
@@ -43,56 +42,49 @@ export default defineComponent({
                         Password: this.userData.password,
                     };
 
-                    const userResponse = await login(loginRequest);
+                    await this.login(loginRequest);
 
-                    if (userResponse && userResponse.rol !== undefined) {
-                        localStorage.setItem('currentUser', JSON.stringify(userResponse));
-                        console.log(userResponse.rol)
-                        if (Number(userResponse.rol) === 1) {
-                            this.$router.push('/intranet');
-                        } else if (Number(userResponse.rol) === 2) {
-                            this.$router.push('/');
+                    if (this.isLoggedIn) {
+                        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                        if (currentUser && currentUser.rol !== undefined) {
+                            if (Number(currentUser.rol) === 1) {
+                                this.$router.push('/intranet');
+                            } else if (Number(currentUser.rol) === 2) {
+                                this.$router.push('/');
+                            }
+                        } else {
+                            this.error = true;
+                            this.errorMessage = 'Credenciales incorrectas.';
                         }
                     } else {
-                        console.log(userResponse);
                         this.error = true;
                         this.errorMessage = 'Credenciales incorrectas.';
                     }
-                }catch (error) {
-                        if (axios.isAxiosError(error) && error.response) {
-                            if (error.response.status === 401) {
-                                this.errorMessage = 'Credenciales incorrectas.';
-                            } else {
-                                this.errorMessage = 'Error al iniciar sesión: ' + (error.response.data.message || 'Un error ha ocurrido');
-                            }
-                        } else {
-                            this.errorMessage = 'Usuario o contraseña incorrectas.';
-                        }
-                        this.error = true;
-                        console.error('Error al iniciar sesión:', error);
+                } catch (error) {
+                    if (error instanceof Error) {
+                        this.errorMessage = error.message;
+                    } else {
+                        this.errorMessage = 'Usuario o contraseña incorrectas.';
                     }
-                }
-        },
-
-            validateForm() {
-                if (!this.userData.name || !this.userData.password) {
                     this.error = true;
-                    this.errorMessage = 'El nombre de usuario y la contraseña son obligatorios.';
-                    return false;
+                    console.error('Error al iniciar sesión:', error);
                 }
-                this.error = false;
-                return true;
-            },
-
-            switchForm() {
-                this.$emit('switch-form');
-            },
+            }
+        },
+        validateForm() {
+            if (!this.userData.name || !this.userData.password) {
+                this.error = true;
+                this.errorMessage = 'El nombre de usuario y la contraseña son obligatorios.';
+                return false;
+            }
+            this.error = false;
+            return true;
         },
         switchForm() {
             this.$emit('switch-form');
         },
     },
-);
+});
 </script>
 
 <style scoped>
@@ -128,7 +120,6 @@ button {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
 }
-
 
 .error {
     color: #D8000C;

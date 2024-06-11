@@ -29,7 +29,7 @@
 <script lang="ts">
 
 import { ref, onMounted } from 'vue';
-import { ObrasService } from '../services/ObrasService';
+import { useObraStore } from '../services/ObrasService';
 import type { Obra } from '../services/ObrasService'; 
 
 
@@ -60,7 +60,9 @@ export default {
 
         const cargarObras = async () => {
             try {
-                obras.value = await ObrasService.getObras();
+                const obraStore = useObraStore();
+                const response: any = await obraStore.fetchObras();
+                obras.value = response;
             } catch (error) {
                 console.error(error);
             }
@@ -72,8 +74,9 @@ export default {
             if (nuevaObra.value) {
                 try {
                     console.log("Creando obra: ", nuevaObra.value);
-                    const obraCreada = await ObrasService.createObra(nuevaObra.value);
-                    obras.value.push(obraCreada);
+                    const obraStore = useObraStore();
+                    const obraCreada = await obraStore.createObra(nuevaObra.value);
+                    obras.value.push(obraCreada!);
                     nuevaObra.value = {
                         idPlay: 0,
                         name: '',
@@ -93,7 +96,8 @@ export default {
 
         const eliminarObra = async (id: number) => {
             try {
-                await ObrasService.deleteObra(id);
+                const obraStore = useObraStore();
+                await obraStore.deleteObra(id);
                 obras.value = obras.value.filter(obra => obra?.idPlay !== id); // Elimina la obra de la lista
             } catch (error) {
                 console.error(error);

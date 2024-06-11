@@ -1,17 +1,17 @@
-import axios, { AxiosError } from 'axios';
+// authService.ts
+const API_URL = 'http://localhost:5224/Usuario';
 
-interface UserData {
+export interface UserData {
     UserName: string;
     Email: string;
     Password: string;
     Rol: string | number;
 }
+
 export interface LoginRequest {
     UserName: string;
     Password: string;
 }
-
-const API_URL = 'http://localhost:5224/Usuario';
 
 export interface LoginResponse {
     token: string;
@@ -33,49 +33,50 @@ export interface User {
     rol: number;    
 }
 
-export async function login(loginData: LoginRequest): Promise<User> {
+export const login = async (loginData: LoginRequest): Promise<User> => {
     try {
-        const API_URL = 'http://localhost:5224/UsuarioLogin/Login';
-        const response = await axios.post<User>(API_URL, loginData);
-        return response.data;
-    } catch (error: any) {
-        if (error.response && error.response.data && error.response.data.message) {
-            throw new Error(error.response.data.message);
-        } else if (error.response && error.response.data) {
-            throw new Error(JSON.stringify(error.response.data));
-        } else {
-            throw new Error('Error al comunicarse con el servidor');
-        }
-    }
-}
+        const response = await fetch('http://localhost:5224/UsuarioLogin/Login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loginData),
+        });
 
-export async function register(userData: UserData): Promise<void> {
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.message || 'Error al iniciar sesión');
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        throw new Error(error.message || 'Error al comunicarse con el servidor');
+    }
+};
+
+export const register = async (userData: UserData): Promise<void> => {
     try {
         const payload = {
             UserName: userData.UserName,
             Email: userData.Email,
             Password: userData.Password,
             Rol: userData.Rol === 'Admin' ? 1 : 2,
-            Reservas: []
+            Reservas: [],
         };
-        const response = await axios.post(`${API_URL}`, payload);
-        return response.data;
-    } catch (error: any) {
-        if (error.response && error.response.data && error.response.data.message) {
-            throw new Error(error.response.data.message);
-        } else if (error.response && error.response.data) {
-            throw new Error(JSON.stringify(error.response.data));
-        } else {
-            throw new Error('Error al comunicarse con el servidor');
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.message || 'Error al registrarse');
         }
+    } catch (error: any) {
+        throw new Error(error.message || 'Error al comunicarse con el servidor');
     }
-}
-
-export function logout(): void {
-    localStorage.removeItem('user');
-}
-
-export function getCurrentUser(): LoginResponse | null {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-}
+};

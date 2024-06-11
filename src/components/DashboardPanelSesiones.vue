@@ -14,6 +14,7 @@
         <div v-for="sesion in sesiones" :key="sesion.idSesion" class="sesion-item">
             <p>Obra: {{ sesion.obra?.name }}</p>
             <p>Precio: {{ sesion.obra?.price }}</p>
+            <p>Fecha: {{ sesion.sesionTime }}</p>
             <button @click="eliminarSesion(sesion.idSesion)">Eliminar</button>
         </div>
     </div>
@@ -22,7 +23,8 @@
 <script lang="ts">
 import { ref, onMounted, defineComponent } from 'vue';
 import sessionService from '@/services/sessionService';
-import { ObrasService } from '@/services/ObrasService';
+import { useObraStore } from '@/services/ObrasService';
+import { useSessionStore } from '@/services/sessionService';
 import type { Obra } from '@/services/ObrasService';
 import type { Session } from '@/services/sessionService';
 
@@ -38,7 +40,8 @@ export default defineComponent({
 
         const cargarSesiones = async () => {
             try {
-                const response = await sessionService.getSessions();
+                const sessionStore = useSessionStore();
+                const response = await sessionStore.fetchSessions();
                 sesiones.value = response;
             } catch (error) {
                 console.error(error);
@@ -47,7 +50,8 @@ export default defineComponent({
 
         const cargarObras = async () => {
             try {
-                const response = await ObrasService.getObras();
+                const obrasStore = useObraStore();
+                const response = await obrasStore.fetchObras();
                 obras.value = response;
             } catch (error) {
                 console.error('Error al cargar las obras:', error);
@@ -62,8 +66,9 @@ export default defineComponent({
                         sesionTime: formatDatetime(nuevaSesion.value.sesionTime),
                         asientos: [] 
                     };
-                    const sesionCreada = await sessionService.createSession(sesionACrear);
-                    sesiones.value.push(sesionCreada);
+                    const sessionStore = useSessionStore();
+                    const sesionCreada = await sessionStore.createSession(sesionACrear);
+                    sesiones.value.push(sesionCreada!);
                     nuevaSesion.value = {
                         idPlay: 0,
                         sesionTime: ''
@@ -77,7 +82,8 @@ export default defineComponent({
         const eliminarSesion = async (idSesion?: number) => {
             if (typeof idSesion === 'number') {
                 try {
-                    await sessionService.deleteSession(idSesion);
+                    const sessionStore = useSessionStore();
+                    await sessionStore.deleteSession(idSesion);
                     await cargarSesiones();
                 } catch (error) {
                     console.error(error);

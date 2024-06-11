@@ -1,7 +1,7 @@
 <template>
     <div>
         <Navbar />
-        <DetalleObras :obra="obra" />
+        <DetalleObras :obra="obra" :sesion="sesion" />
         <Footera />
     </div>
 </template>
@@ -9,11 +9,12 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { ObrasService } from '../services/ObrasService';
+import { useObraStore } from '../services/ObrasService';
 import Navbar from '../components/Navbar.vue';
 import Footera from '../components/Footer.vue';
 import DetalleObras from '../components/DetalleObras.vue';
 import type { Obra } from '../services/ObrasService';
+import type { Session } from '../services/sessionService';
 
 export default defineComponent({
     components: {
@@ -23,13 +24,15 @@ export default defineComponent({
     },
     setup() {
         const obra = ref<Obra | null>(null);
+        const sesion = ref<Session | null>(null);
         const route = useRoute();
         const error = ref<string | null>(null);
 
         const loadObraDetails = async () => {
             try {
                 const id = parseInt(route.params.idPlay as string);
-                const fetchedObra = await ObrasService.getObra(id);
+                const obraStore = useObraStore();
+                const fetchedObra = await obraStore.getObra(id);
                 if (fetchedObra) {
                     obra.value = fetchedObra;
                 } else {
@@ -41,9 +44,9 @@ export default defineComponent({
         };
 
         onMounted(loadObraDetails);
-        
 
-        return { obra, error };
+
+        return { obra, sesion, error };
     }
 });
 </script>

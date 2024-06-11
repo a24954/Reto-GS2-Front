@@ -6,7 +6,7 @@
             <p class="obra-price">Precio: ${{ obra.price }}</p>
             <p class="obra-duration">Duración: {{ obra.duration }}</p>
             <div class="buttons-container">
-                <router-link :to="{ name: 'Reservas', params: { obraName: obra.name } }" class="btn-reservar">
+                <router-link :to="{ name: 'Reservas', params: { idPlay: obra?.idPlay.toString(), idSesion: sesion?.idSesion!.toString() } }" class="btn-reservar">
                     Reservar
                 </router-link>
                 <router-link to="/obras" class="btn-volver">Volver a las obras</router-link>
@@ -21,11 +21,16 @@ import { defineComponent } from 'vue';
 import type { PropType } from 'vue';
 import type { Obra } from '../services/ObrasService';
 import { useRouter } from 'vue-router';
+import type { Session } from '../services/sessionService';
 
 export default defineComponent({
     props: {
         obra: {
-            type: Object as PropType<Obra>,
+            type: Object as PropType<Obra | null>,
+            required: true
+        },
+        sesion: {
+            type: Object as PropType<Session | null>,
             required: true
         },
     },

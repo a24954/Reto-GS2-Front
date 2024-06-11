@@ -8,13 +8,39 @@
 <script lang="ts">
 import LeftMenu from '../components/LeftMenu.vue';
 import DashboardPanel from '../components/DashboardPanel.vue'
+import { defineComponent, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
     name: 'IntranetView',
     components: {
         LeftMenu,
         DashboardPanel
-    }
+    },
+
+    setup() {
+        console.log()
+        const router = useRouter();
+        const isLoggedIn = ref(false);
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            isLoggedIn.value = !!user;
+            if(!isLoggedIn.value){
+                logout();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            isLoggedIn.value = false;
+            router.push('/'); 
+        }
+
+        checkLoginStatus();
+
+        return { isLoggedIn, logout };
+    },
 };
 </script>
 

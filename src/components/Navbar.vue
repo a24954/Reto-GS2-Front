@@ -11,7 +11,6 @@
             <ul>
                 <li><router-link to="/">INICIO</router-link></li>
                 <li><router-link to="/Obras">OBRAS</router-link></li>
-                <li><router-link to="/Reservas">RESERVAS</router-link></li>
                 <li v-if="isLoggedIn" @click="logout"><router-link to="/">CERRAR SESION</router-link></li>
                 <li v-else><router-link to="/Login">INICIAR SESIÓN</router-link></li>
             </ul>
